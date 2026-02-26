@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Louie Hegeler-Meile | Portfolio</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div class="bg-orb orb-a"></div>
+  <div class="bg-orb orb-b"></div>
+  <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">Dark Mode</button>
+
+  <main class="wrap">
+    <header class="hero card">
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow">Resume / Portfolio</p>
+          <p class="nameplate">Louie Hegeler-Meile</p>
+          <h1>I am <span id="role-article">an</span> <span id="role-text" class="role-text">IT specialist</span><span class="cursor" aria-hidden="true"></span></h1>
+          <p class="subtitle">Senior IT Operations Specialist with a customer-first technical background, spanning IT operations, second-line support, and hands-on device and platform troubleshooting.</p>
+          <div class="hero-actions">
+            <a class="btn" href="https://www.linkedin.com/in/louiehegelermeile" target="_blank" rel="noreferrer">LinkedIn Profile</a>
+            <a class="btn btn-ghost" href="https://www.linkedin.com/in/louiehegelermeile/detail/contact-info/" target="_blank" rel="noreferrer">Contact Info</a>
+          </div>
+          <p class="meta top-gap">Copenhagen, Capital Region of Denmark, Denmark</p>
+          <div class="quick-stats">
+            <span class="pill">500+ connections</span>
+            <span class="pill">723 followers</span>
+            <span class="pill">IT Operations</span>
+            <span class="pill">PC Builder</span>
+          </div>
+        </div>
+        <figure class="profile-shell">
+          <img class="profile-photo" src="{{ url_for('static', filename='profile.jpg') }}" alt="Louie Hegeler-Meile profile photo">
+        </figure>
+      </div>
+    </header>
+
+    <section class="grid">
+      <article class="card">
+        <h2>About</h2>
+        <div class="item">
+          <p>I am an energetic and outgoing IT professional with customer service experience since my early teens. At Webhelp, I delivered second-line support for iOS and macOS users, handled escalations, and coordinated with authorized global repair partners. I bring a practical mindset, strong communication, and a focus on resolving issues end-to-end.</p>
+        </div>
+        <div class="item">
+          <p>Outside of work, I enjoy building and fixing PCs and spending downtime gaming. Those interests keep me curious, hands-on, and constantly learning new tools and systems.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>Experience</h2>
+        <div class="item">
+          <h3>Senior IT Operations Specialist</h3>
+          <p class="meta">21-5 • Apr 2025 - Present • Hørsholm, Denmark</p>
+          <p>Responsible for daily IT operations, internal platform reliability, and support delivery across devices and business systems.</p>
+        </div>
+        <div class="item">
+          <h3>IT Operations Specialist</h3>
+          <p class="meta">21-5 • Sep 2021 - Apr 2025</p>
+          <p>Worked with Microsoft Exchange, Azure DevOps, and broader operational support across modern workplace tooling.</p>
+        </div>
+        <div class="item">
+          <h3>Senior Technical Advisor</h3>
+          <p class="meta">Webhelp • Aug 2020 - Aug 2021 • Copenhagen</p>
+          <p>Delivered second-line support, handled high-priority escalations, and supported repair coordination with authorized service providers worldwide.</p>
+        </div>
+        <div class="item">
+          <h3>Technical Advisor</h3>
+          <p class="meta">Webhelp • Jan 2020 - Jul 2020</p>
+          <p>Supported customers in software and hardware troubleshooting with focus on Apple ecosystems.</p>
+        </div>
+        <div class="item">
+          <h3>Employee Representative / Bartender / Dishwasher</h3>
+          <p class="meta">Vinstue 90 • Aug 2015 - Present (multiple roles)</p>
+          <p>Managed payroll and tax reporting, coordinated shifts, and supported onboarding and training.</p>
+        </div>
+        <div class="item">
+          <h3>Storage Helper</h3>
+          <p class="meta">HARTUNG Men's Wear • Sep 2014 - Aug 2018</p>
+          <p>Handled stock logistics, customer service, and in-store sales support.</p>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>Skills</h2>
+        <ul class="tags">
+          <li>IT Operations</li><li>Second-Line Support</li><li>Azure Administration</li><li>Microsoft 365</li><li>Microsoft Exchange</li><li>Azure DevOps</li><li>iOS</li><li>macOS</li><li>tvOS</li><li>watchOS</li><li>Microsoft Office</li><li>Adobe Suite</li><li>Customer Service</li><li>Escalation Handling</li><li>Payroll & Tax Reporting</li><li>Recruiting & Coaching</li>
+        </ul>
+        <h2 class="top-gap">Education</h2>
+        <div class="item">
+          <h3>Rysensteen Gymnasium</h3>
+          <p class="meta">High School • 2017 - 2019</p>
+          <p>Music A, English A, Maths B.</p>
+        </div>
+        <div class="item">
+          <h3>Skolen ved Søerne</h3>
+          <p class="meta">Primary School • 2007 - 2017</p>
+        </div>
+      </article>
+
+      <article class="card span-2">
+        <h2>Profile Snapshot</h2>
+        <div class="projects">
+          <div class="project">
+            <h3>Current Focus</h3>
+            <p>Building reliable internal IT operations and support processes at 21-5.</p>
+          </div>
+          <div class="project">
+            <h3>Support Depth</h3>
+            <p>Second-line advisory background with strong Apple platform troubleshooting experience.</p>
+          </div>
+          <div class="project">
+            <h3>Languages</h3>
+            <p>Danish (native) and English (fluent), enabling clear support across local and international teams.</p>
+          </div>
+          <div class="project">
+            <h3>Personal Side</h3>
+            <p>Passionate about PC building, troubleshooting hardware, and gaming. I like solving practical problems on and off the clock.</p>
+          </div>
+        </div>
+      </article>
+    </section>
+  </main>
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var btn = document.getElementById("theme-toggle");
+
+      function currentTheme() {
+        var explicit = root.getAttribute("data-theme");
+        if (explicit) return explicit;
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+
+      function renderLabel() {
+        var isDark = currentTheme() === "dark";
+        btn.textContent = isDark ? "Light Mode" : "Dark Mode";
+      }
+
+      btn.addEventListener("click", function () {
+        var next = currentTheme() === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        localStorage.setItem("theme", next);
+        renderLabel();
+      });
+
+      renderLabel();
+    })();
+
+    (function () {
+      var roleEl = document.getElementById("role-text");
+      var articleEl = document.getElementById("role-article");
+      if (!roleEl || !articleEl) return;
+
+      var roles = [
+        "IT specialist",
+        "2nd-line advisor",
+        "customer support pro",
+        "Apple troubleshooter",
+        "M365 admin",
+        "problem solver",
+        "peer coach",
+        "developer"
+      ];
+      var roleIndex = 0;
+      var charIndex = 0;
+      var deleting = false;
+      var holdMs = 1100;
+
+      function articleFor(role) {
+        var trimmed = role.trim().toLowerCase();
+        if (/^it\b/.test(trimmed)) return "an";
+        if (/^[aeiou]/.test(trimmed)) return "an";
+        return "a";
+      }
+
+      function tick() {
+        var current = roles[roleIndex];
+        articleEl.textContent = articleFor(current);
+
+        if (!deleting) {
+          charIndex += 1;
+          roleEl.textContent = current.slice(0, charIndex);
+          if (charIndex === current.length) {
+            deleting = true;
+            setTimeout(tick, holdMs);
+            return;
+          }
+          setTimeout(tick, 85);
+          return;
+        }
+
+        charIndex -= 1;
+        roleEl.textContent = current.slice(0, charIndex);
+        if (charIndex === 0) {
+          deleting = false;
+          roleIndex = (roleIndex + 1) % roles.length;
+          setTimeout(tick, 220);
+          return;
+        }
+        setTimeout(tick, 45);
+      }
+
+      tick();
+    })();
+  </script>
+</body>
+</html>
