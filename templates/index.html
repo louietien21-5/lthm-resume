@@ -20,6 +20,13 @@
   <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">Dark Mode</button>
 
   <main class="wrap">
+    <nav class="quick-nav card" aria-label="Section navigation">
+      <a href="#about">About</a>
+      <a href="#experience">Experience</a>
+      <a href="#skills">Skills</a>
+      <a href="#contact">Contact</a>
+    </nav>
+
     <header class="hero card">
       <div class="hero-grid">
         <div>
@@ -38,6 +45,11 @@
             <span class="pill">IT Operations</span>
             <span class="pill">PC Builder</span>
           </div>
+          <div class="wins">
+            <div class="win"><strong>10+ years</strong><span>customer-facing experience</span></div>
+            <div class="win"><strong>2nd-line</strong><span>Apple ecosystem support</span></div>
+            <div class="win"><strong>Cross-team</strong><span>operations + coaching mindset</span></div>
+          </div>
         </div>
         <figure class="profile-shell">
           <img class="profile-photo" src="{{ url_for('static', filename='profile.jpg') }}" alt="Louie Hegeler-Meile profile photo">
@@ -46,7 +58,7 @@
     </header>
 
     <section class="grid">
-      <article class="card">
+      <article class="card" id="about">
         <h2>About</h2>
         <div class="item">
           <p>I am an energetic and outgoing IT professional with customer service experience since my early teens. At Webhelp, I delivered second-line support for iOS and macOS users, handled escalations, and coordinated with authorized global repair partners. I bring a practical mindset, strong communication, and a focus on resolving issues end-to-end.</p>
@@ -56,41 +68,59 @@
         </div>
       </article>
 
-      <article class="card">
+      <article class="card" id="experience">
         <h2>Experience</h2>
-        <div class="item">
-          <h3>Senior IT Operations Specialist</h3>
+        <div class="item timeline-item">
+          <div class="exp-row">
+            <img class="exp-logo" src="{{ url_for('static', filename='logos/21-5.jpg') }}" alt="21-5 logo">
+            <h3>Senior IT Operations Specialist</h3>
+          </div>
           <p class="meta">21-5 • Apr 2025 - Present • Hørsholm, Denmark</p>
           <p>Responsible for daily IT operations, internal platform reliability, and support delivery across devices and business systems.</p>
         </div>
-        <div class="item">
-          <h3>IT Operations Specialist</h3>
+        <div class="item timeline-item">
+          <div class="exp-row">
+            <img class="exp-logo" src="{{ url_for('static', filename='logos/21-5.jpg') }}" alt="21-5 logo">
+            <h3>IT Operations Specialist</h3>
+          </div>
           <p class="meta">21-5 • Sep 2021 - Apr 2025</p>
           <p>Worked with Microsoft Exchange, Azure DevOps, and broader operational support across modern workplace tooling.</p>
         </div>
-        <div class="item">
-          <h3>Senior Technical Advisor</h3>
+        <div class="item timeline-item">
+          <div class="exp-row">
+            <img class="exp-logo" src="{{ url_for('static', filename='logos/webhelp.jpg') }}" alt="Webhelp logo">
+            <h3>Senior Technical Advisor</h3>
+          </div>
           <p class="meta">Webhelp • Aug 2020 - Aug 2021 • Copenhagen</p>
           <p>Delivered second-line support, handled high-priority escalations, and supported repair coordination with authorized service providers worldwide.</p>
         </div>
-        <div class="item">
-          <h3>Technical Advisor</h3>
+        <div class="item timeline-item">
+          <div class="exp-row">
+            <img class="exp-logo" src="{{ url_for('static', filename='logos/webhelp.jpg') }}" alt="Webhelp logo">
+            <h3>Technical Advisor</h3>
+          </div>
           <p class="meta">Webhelp • Jan 2020 - Jul 2020</p>
           <p>Supported customers in software and hardware troubleshooting with focus on Apple ecosystems.</p>
         </div>
-        <div class="item">
-          <h3>Employee Representative / Bartender / Dishwasher</h3>
+        <div class="item timeline-item">
+          <div class="exp-row">
+            <span class="exp-logo exp-logo-badge" aria-hidden="true">V90</span>
+            <h3>Employee Representative / Bartender / Dishwasher</h3>
+          </div>
           <p class="meta">Vinstue 90 • Aug 2015 - Present (multiple roles)</p>
           <p>Managed payroll and tax reporting, coordinated shifts, and supported onboarding and training.</p>
         </div>
-        <div class="item">
-          <h3>Storage Helper</h3>
+        <div class="item timeline-item">
+          <div class="exp-row">
+            <span class="exp-logo exp-logo-badge" aria-hidden="true">H</span>
+            <h3>Storage Helper</h3>
+          </div>
           <p class="meta">HARTUNG Men's Wear • Sep 2014 - Aug 2018</p>
           <p>Handled stock logistics, customer service, and in-store sales support.</p>
         </div>
       </article>
 
-      <article class="card">
+      <article class="card" id="skills">
         <h2>Skills</h2>
         <ul class="tags">
           <li>IT Operations</li><li>Second-Line Support</li><li>Azure Administration</li><li>Microsoft 365</li><li>Microsoft Exchange</li><li>Azure DevOps</li><li>iOS</li><li>macOS</li><li>tvOS</li><li>watchOS</li><li>Microsoft Office</li><li>Adobe Suite</li><li>Customer Service</li><li>Escalation Handling</li><li>Payroll & Tax Reporting</li><li>Recruiting & Coaching</li>
@@ -128,6 +158,15 @@
           </div>
         </div>
       </article>
+
+      <article class="card span-2 cta" id="contact">
+        <h2>Let’s Connect</h2>
+        <p>I’m open to new opportunities where operations, support quality, and practical problem-solving matter.</p>
+        <div class="hero-actions">
+          <a class="btn" href="mailto:mail@louietien.com">Email Me</a>
+          <a class="btn btn-ghost" href="https://www.linkedin.com/in/louiehegelermeile" target="_blank" rel="noreferrer">Message on LinkedIn</a>
+        </div>
+      </article>
     </section>
   </main>
   <script>
@@ -154,6 +193,40 @@
       });
 
       renderLabel();
+    })();
+
+    (function () {
+      var nav = document.querySelector(".quick-nav");
+      if (!nav) return;
+      var links = Array.from(nav.querySelectorAll("a[href^='#']"));
+      var sections = links
+        .map(function (link) { return document.querySelector(link.getAttribute("href")); })
+        .filter(Boolean);
+
+      function setActive(id) {
+        links.forEach(function (link) {
+          var target = link.getAttribute("href").slice(1);
+          link.classList.toggle("is-active", target === id);
+        });
+      }
+
+      if ("IntersectionObserver" in window && sections.length) {
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              setActive(entry.target.id);
+            }
+          });
+        }, { rootMargin: "-35% 0px -55% 0px", threshold: 0.01 });
+
+        sections.forEach(function (section) { observer.observe(section); });
+      }
+
+      links.forEach(function (link) {
+        link.addEventListener("click", function () {
+          setActive(link.getAttribute("href").slice(1));
+        });
+      });
     })();
 
     (function () {
