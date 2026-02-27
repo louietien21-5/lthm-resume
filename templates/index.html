@@ -3,7 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Louie Hegeler-Meile | Portfolio</title>
+  <title>{{ site.page_title }}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
   <script>
     (function () {
@@ -17,38 +18,37 @@
 <body>
   <div class="bg-orb orb-a"></div>
   <div class="bg-orb orb-b"></div>
-  <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">Dark Mode</button>
+  <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">{{ site.theme.dark_label }}</button>
 
   <main class="wrap">
     <nav class="quick-nav card" aria-label="Section navigation">
-      <a href="#about">About</a>
-      <a href="#experience">Experience</a>
-      <a href="#skills">Skills</a>
-      <a href="#contact">Contact</a>
+      {% for link in site.quick_nav %}
+      <a href="{{ link.href }}">{{ link.label }}</a>
+      {% endfor %}
     </nav>
 
     <header class="hero card">
       <div class="hero-grid">
         <div>
-          <p class="eyebrow">Resume / Portfolio</p>
-          <p class="nameplate">Louie Hegeler-Meile</p>
-          <h1>I am <span id="role-article">an</span> <span id="role-text" class="role-text">IT specialist</span><span class="cursor" aria-hidden="true"></span></h1>
-          <p class="subtitle">Senior IT Operations Specialist with a customer-first technical background, spanning IT operations, second-line support, and hands-on device and platform troubleshooting.</p>
+          <p class="eyebrow">{{ site.hero.eyebrow }}</p>
+          <p class="nameplate">{{ site.hero.nameplate }}</p>
+          <h1>{{ site.hero.intro }} <span id="role-article">an</span> <span id="role-text" class="role-text">{{ site.hero.roles[0] }}</span><span class="cursor" aria-hidden="true"></span></h1>
+          <p class="subtitle">{{ site.hero.subtitle }}</p>
           <div class="hero-actions">
-            <a class="btn" href="https://www.linkedin.com/in/louiehegelermeile" target="_blank" rel="noreferrer">LinkedIn Profile</a>
-            <a class="btn btn-ghost" href="https://www.linkedin.com/in/louiehegelermeile/detail/contact-info/" target="_blank" rel="noreferrer">Contact Info</a>
+            {% for action in site.hero.actions %}
+            <a class="btn{% if action.ghost %} btn-ghost{% endif %}" href="{{ action.href }}"{% if action.external %} target="_blank" rel="noreferrer"{% endif %}>{{ action.label }}</a>
+            {% endfor %}
           </div>
-          <p class="meta top-gap">Copenhagen, Capital Region of Denmark, Denmark</p>
+          <p class="meta top-gap">{{ site.hero.location }}</p>
           <div class="quick-stats">
-            <span class="pill">500+ connections</span>
-            <span class="pill">723 followers</span>
-            <span class="pill">IT Operations</span>
-            <span class="pill">PC Builder</span>
+            {% for stat in site.hero.stats %}
+            <span class="pill">{{ stat }}</span>
+            {% endfor %}
           </div>
           <div class="wins">
-            <div class="win"><strong>10+ years</strong><span>customer-facing experience</span></div>
-            <div class="win"><strong>2nd-line</strong><span>Apple ecosystem support</span></div>
-            <div class="win"><strong>Cross-team</strong><span>operations + coaching mindset</span></div>
+            {% for win in site.hero.wins %}
+            <div class="win"><strong>{{ win.value }}</strong><span>{{ win.label }}</span></div>
+            {% endfor %}
           </div>
         </div>
         <figure class="profile-shell">
@@ -59,112 +59,72 @@
 
     <section class="grid">
       <article class="card" id="about">
-        <h2>About</h2>
+        <h2>{{ site.about.title }}</h2>
+        {% for paragraph in site.about.paragraphs %}
         <div class="item">
-          <p>I am an energetic and outgoing IT professional with customer service experience since my early teens. At Webhelp, I delivered second-line support for iOS and macOS users, handled escalations, and coordinated with authorized global repair partners. I bring a practical mindset, strong communication, and a focus on resolving issues end-to-end.</p>
+          <p>{{ paragraph }}</p>
         </div>
-        <div class="item">
-          <p>Outside of work, I enjoy building and fixing PCs and spending downtime gaming. Those interests keep me curious, hands-on, and constantly learning new tools and systems.</p>
-        </div>
+        {% endfor %}
       </article>
 
       <article class="card" id="experience">
-        <h2>Experience</h2>
+        <h2>{{ site.experience.title }}</h2>
+        {% for item in site.experience["items"] %}
         <div class="item timeline-item">
           <div class="exp-row">
-            <img class="exp-logo" src="{{ url_for('static', filename='logos/21-5.jpg') }}" alt="21-5 logo">
-            <h3>Senior IT Operations Specialist</h3>
+            {% if item.logo.type == "image" %}
+            <img class="exp-logo" src="{{ url_for('static', filename=item.logo.src) }}" alt="{{ item.logo.alt }}">
+            {% else %}
+            <span class="exp-logo exp-logo-badge" aria-hidden="true">{{ item.logo.text }}</span>
+            {% endif %}
+            <h3>{{ item.title }}</h3>
           </div>
-          <p class="meta">21-5 • Apr 2025 - Present • Hørsholm, Denmark</p>
-          <p>Responsible for daily IT operations, internal platform reliability, and support delivery across devices and business systems.</p>
+          <p class="meta">{{ item.meta }}</p>
+          <p>{{ item.description }}</p>
         </div>
-        <div class="item timeline-item">
-          <div class="exp-row">
-            <img class="exp-logo" src="{{ url_for('static', filename='logos/21-5.jpg') }}" alt="21-5 logo">
-            <h3>IT Operations Specialist</h3>
-          </div>
-          <p class="meta">21-5 • Sep 2021 - Apr 2025</p>
-          <p>Worked with Microsoft Exchange, Azure DevOps, and broader operational support across modern workplace tooling.</p>
-        </div>
-        <div class="item timeline-item">
-          <div class="exp-row">
-            <img class="exp-logo" src="{{ url_for('static', filename='logos/webhelp.jpg') }}" alt="Webhelp logo">
-            <h3>Senior Technical Advisor</h3>
-          </div>
-          <p class="meta">Webhelp • Aug 2020 - Aug 2021 • Copenhagen</p>
-          <p>Delivered second-line support, handled high-priority escalations, and supported repair coordination with authorized service providers worldwide.</p>
-        </div>
-        <div class="item timeline-item">
-          <div class="exp-row">
-            <img class="exp-logo" src="{{ url_for('static', filename='logos/webhelp.jpg') }}" alt="Webhelp logo">
-            <h3>Technical Advisor</h3>
-          </div>
-          <p class="meta">Webhelp • Jan 2020 - Jul 2020</p>
-          <p>Supported customers in software and hardware troubleshooting with focus on Apple ecosystems.</p>
-        </div>
-        <div class="item timeline-item">
-          <div class="exp-row">
-            <span class="exp-logo exp-logo-badge" aria-hidden="true">V90</span>
-            <h3>Employee Representative / Bartender / Dishwasher</h3>
-          </div>
-          <p class="meta">Vinstue 90 • Aug 2015 - Present (multiple roles)</p>
-          <p>Managed payroll and tax reporting, coordinated shifts, and supported onboarding and training.</p>
-        </div>
-        <div class="item timeline-item">
-          <div class="exp-row">
-            <span class="exp-logo exp-logo-badge" aria-hidden="true">H</span>
-            <h3>Storage Helper</h3>
-          </div>
-          <p class="meta">HARTUNG Men's Wear • Sep 2014 - Aug 2018</p>
-          <p>Handled stock logistics, customer service, and in-store sales support.</p>
-        </div>
+        {% endfor %}
       </article>
 
       <article class="card" id="skills">
-        <h2>Skills</h2>
+        <h2>{{ site.skills.title }}</h2>
         <ul class="tags">
-          <li>IT Operations</li><li>Second-Line Support</li><li>Azure Administration</li><li>Microsoft 365</li><li>Microsoft Exchange</li><li>Azure DevOps</li><li>iOS</li><li>macOS</li><li>tvOS</li><li>watchOS</li><li>Microsoft Office</li><li>Adobe Suite</li><li>Customer Service</li><li>Escalation Handling</li><li>Payroll & Tax Reporting</li><li>Recruiting & Coaching</li>
+          {% for skill in site.skills["items"] %}
+          <li>{{ skill }}</li>
+          {% endfor %}
         </ul>
-        <h2 class="top-gap">Education</h2>
+        <h2 class="top-gap">{{ site.skills.education_title }}</h2>
+        {% for school in site.skills.education %}
         <div class="item">
-          <h3>Rysensteen Gymnasium</h3>
-          <p class="meta">High School • 2017 - 2019</p>
-          <p>Music A, English A, Maths B.</p>
+          <h3>{{ school.school }}</h3>
+          {% if school.meta %}
+          <p class="meta">{{ school.meta }}</p>
+          {% endif %}
+          {% if school.description %}
+          <p>{{ school.description }}</p>
+          {% endif %}
         </div>
-        <div class="item">
-          <h3>Skolen ved Søerne</h3>
-          <p class="meta">Primary School • 2007 - 2017</p>
-        </div>
+        {% endfor %}
       </article>
 
       <article class="card span-2">
-        <h2>Profile Snapshot</h2>
+        <h2>{{ site.snapshot.title }}</h2>
         <div class="projects">
+          {% for item in site.snapshot["items"] %}
           <div class="project">
-            <h3>Current Focus</h3>
-            <p>Building reliable internal IT operations and support processes at 21-5.</p>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.description }}</p>
           </div>
-          <div class="project">
-            <h3>Support Depth</h3>
-            <p>Second-line advisory background with strong Apple platform troubleshooting experience.</p>
-          </div>
-          <div class="project">
-            <h3>Languages</h3>
-            <p>Danish (native) and English (fluent), enabling clear support across local and international teams.</p>
-          </div>
-          <div class="project">
-            <h3>Personal Side</h3>
-            <p>Passionate about PC building, troubleshooting hardware, and gaming. I like solving practical problems on and off the clock.</p>
-          </div>
+          {% endfor %}
         </div>
       </article>
 
       <article class="card span-2 cta" id="contact">
-        <h2>Let’s Connect</h2>
-        <p>I’m open to new opportunities where operations, support quality, and practical problem-solving matter.</p>
+        <h2>{{ site.contact.title }}</h2>
+        <p>{{ site.contact.description }}</p>
         <div class="hero-actions">
-          <a class="btn" href="mailto:mail@louietien.com">Email Me</a>
-          <a class="btn btn-ghost" href="https://www.linkedin.com/in/louiehegelermeile" target="_blank" rel="noreferrer">Message on LinkedIn</a>
+          {% for action in site.contact.actions %}
+          <a class="btn{% if action.ghost %} btn-ghost{% endif %}" href="{{ action.href }}"{% if action.external %} target="_blank" rel="noreferrer"{% endif %}>{{ action.label }}</a>
+          {% endfor %}
         </div>
       </article>
     </section>
@@ -182,7 +142,7 @@
 
       function renderLabel() {
         var isDark = currentTheme() === "dark";
-        btn.textContent = isDark ? "Light Mode" : "Dark Mode";
+        btn.textContent = isDark ? {{ site.theme.light_label | tojson }} : {{ site.theme.dark_label | tojson }};
       }
 
       btn.addEventListener("click", function () {
@@ -234,16 +194,9 @@
       var articleEl = document.getElementById("role-article");
       if (!roleEl || !articleEl) return;
 
-      var roles = [
-        "IT specialist",
-        "2nd-line advisor",
-        "customer support pro",
-        "Apple troubleshooter",
-        "M365 admin",
-        "problem solver",
-        "peer coach",
-        "developer"
-      ];
+      var roles = {{ site.hero.roles | tojson }};
+      if (!Array.isArray(roles) || roles.length === 0) return;
+
       var roleIndex = 0;
       var charIndex = 0;
       var deleting = false;
@@ -255,6 +208,9 @@
         if (/^[aeiou]/.test(trimmed)) return "an";
         return "a";
       }
+
+      roleEl.textContent = "";
+      articleEl.textContent = articleFor(roles[0]);
 
       function tick() {
         var current = roles[roleIndex];
