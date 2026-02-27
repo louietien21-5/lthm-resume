@@ -123,7 +123,11 @@ SITE_DATA = {
                 ),
             },
             {
-                "logo": {"type": "badge", "text": "V90"},
+                "logo": {
+                    "type": "image",
+                    "src": "logos/vinstue-90.jpg",
+                    "alt": "Vinstue 90 logo",
+                },
                 "title": "Employee Representative / Bartender / Dishwasher",
                 "meta": "Vinstue 90 | Aug 2015 - Present (multiple roles)",
                 "description": (
