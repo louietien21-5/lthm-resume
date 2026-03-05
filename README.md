@@ -45,6 +45,7 @@ pip install -r requirements.txt
 
 - `STATS_PASSWORD` (required for `/stats` access)
 - `FLASK_SECRET_KEY` (recommended; fallback is random per process start)
+- `STATS_DIR` (optional override for stats file storage location)
 - `PORT` (optional, default `8000`)
 - `HOST` (optional, default `localhost`)
 - `WAITRESS_THREADS` (optional, default `8`)
@@ -54,6 +55,7 @@ Example:
 ```bash
 export STATS_PASSWORD="your-password"
 export FLASK_SECRET_KEY="replace-with-long-random-secret"
+export STATS_DIR="./stats"
 ```
 
 ## Run locally
@@ -120,6 +122,13 @@ Recommended app settings in Azure:
 
 - `STATS_PASSWORD`
 - `FLASK_SECRET_KEY`
+- `STATS_DIR=/home/site/data/stats`
 - `SCM_DO_BUILD_DURING_DEPLOYMENT=true` (if using Oryx build)
 
 Also ensure `requirements.txt` is present (it is) so dependencies install on deploy.
+
+Behavior notes on Azure:
+
+- If `STATS_DIR` is not set, the app auto-uses `/home/site/data/stats` when running on App Service.
+- On first startup in Azure, it seeds that directory from the repo `stats/` files if it is empty.
+- This avoids write failures when the deployed app package is mounted read-only.

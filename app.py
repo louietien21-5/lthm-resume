@@ -1,5 +1,6 @@
 import os
 import hmac
+import shutil
 from pathlib import Path
 from typing import Dict, Optional
 from urllib.parse import urlparse
@@ -16,13 +17,57 @@ from stats_service import (
 )
 
 
+def _resolve_stats_dir(project_root: Path) -> Path:
+    configured = os.getenv("STATS_DIR", "").strip()
+    if configured:
+        return Path(configured).expanduser()
+
+    # App Service deployments commonly mount the app package as read-only.
+    # Use the persistent data volume by default when running on Azure.
+    if os.getenv("WEBSITE_SITE_NAME", "").strip():
+        return Path("/home/site/data/stats")
+
+    return project_root / "stats"
+
+
+def _seed_stats_dir(stats_dir: Path, bundled_stats_dir: Path) -> None:
+    if not bundled_stats_dir.exists() or not bundled_stats_dir.is_dir():
+        return
+
+    try:
+        same_dir = stats_dir.resolve() == bundled_stats_dir.resolve()
+    except OSError:
+        same_dir = stats_dir == bundled_stats_dir
+    if same_dir:
+        return
+
+    try:
+        stats_dir.mkdir(parents=True, exist_ok=True)
+        if any(stats_dir.iterdir()):
+            return
+    except OSError:
+        return
+
+    for item in bundled_stats_dir.iterdir():
+        if not item.is_file():
+            continue
+        target = stats_dir / item.name
+        try:
+            shutil.copy2(item, target)
+        except OSError:
+            # Best effort: continue if a single file cannot be copied.
+            continue
+
+
 def create_app() -> Flask:
     app = Flask(__name__)
     app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", os.getenv("SECRET_KEY", os.urandom(32)))
     # Trust Azure/App Service proxy headers for scheme/host/IP handling.
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
     project_root = Path(__file__).resolve().parent
-    stats_dir = project_root / "stats"
+    bundled_stats_dir = project_root / "stats"
+    stats_dir = _resolve_stats_dir(project_root)
+    _seed_stats_dir(stats_dir=stats_dir, bundled_stats_dir=bundled_stats_dir)
     import_options = get_import_options()
 
     def _stats_password() -> str:
@@ -189,7 +234,12 @@ def create_app() -> Flask:
         except ValueError as exc:
             feedback = {"level": "error", "text": str(exc)}
         except OSError:
-            feedback = {"level": "error", "text": "Could not write import file on this environment."}
+            feedback = {
+                "level": "error",
+                "text": "Could not write import file in {0}. Configure STATS_DIR to a writable path.".format(
+                    stats_dir
+                ),
+            }
 
         session["stats_import_feedback"] = feedback
         if selected_source:
