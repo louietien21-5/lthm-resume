@@ -1,24 +1,54 @@
+import json
 import os
 import hmac
+import secrets
 import shutil
-import json
+import threading
+import time
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Dict, Optional
-from urllib.parse import urlencode, urlparse
 from urllib.error import HTTPError, URLError
+from urllib.parse import urlparse
 from urllib.request import Request as UrlRequest, urlopen
 
 from flask import Flask, abort, jsonify, redirect, render_template, request, send_from_directory, session, url_for
+from webauthn import (
+    generate_authentication_options,
+    generate_registration_options,
+    verify_authentication_response,
+    verify_registration_response,
+)
+from webauthn.helpers import (
+    options_to_json_dict,
+    parse_authentication_credential_json,
+    parse_registration_credential_json,
+)
+from webauthn.helpers.structs import (
+    AttestationConveyancePreference,
+    AuthenticatorSelectionCriteria,
+    ResidentKeyRequirement,
+    UserVerificationRequirement,
+)
 from werkzeug.middleware.proxy_fix import ProxyFix
-from werkzeug.wrappers import Request, Response
 
 from content import SITE_DATA
+from passkey_store import (
+    PasskeyStore,
+    PasskeyStoreError,
+    StoredCredential,
+    base64url_to_bytes,
+    bytes_to_base64url,
+)
 from stats_service import (
     build_dashboard_data,
     build_raw_events_data,
     get_import_options,
     import_plaintext_source,
 )
+
+PASSKEY_SETUP_TTL_SECONDS = 900
+PASSKEY_CEREMONY_TTL_SECONDS = 300
 
 
 def _load_local_env(project_root: Path) -> None:
@@ -35,7 +65,9 @@ def _load_local_env(project_root: Path) -> None:
             key = key.strip()
             value = value.strip().strip('"').strip("'")
             if key:
-                os.environ.setdefault(key, value)
+                # In local development, values from .env.local should win over
+                # any stale shell exports so config changes take effect immediately.
+                os.environ[key] = value
     except OSError:
         return
 
@@ -55,6 +87,21 @@ def _get_int_env(name: str, default: int) -> int:
         if float_value.is_integer():
             return int(float_value)
         return default
+
+
+def _get_bool_env(name: str, default: bool) -> bool:
+    raw_value = os.getenv(name, "").strip().lower()
+    if not raw_value:
+        return default
+    if raw_value in {"1", "true", "yes", "on"}:
+        return True
+    if raw_value in {"0", "false", "no", "off"}:
+        return False
+    return default
+
+
+def _parse_csv_env(name: str) -> list[str]:
+    return [item.strip() for item in os.getenv(name, "").split(",") if item.strip()]
 
 
 def _build_split_prompt(is_pdf: bool) -> str:
@@ -116,16 +163,17 @@ def _resolve_stats_dir(project_root: Path) -> Path:
     if configured:
         return Path(configured).expanduser()
 
-    # App Service deployments commonly mount the app package as read-only.
-    # Use the persistent data volume by default when running on Azure.
     if os.getenv("WEBSITE_SITE_NAME", "").strip():
         return Path("/home/site/data/stats")
 
     return project_root / "stats"
 
 
-def _normalize_login_secret(raw_value: str) -> str:
-    return raw_value.strip().strip("/")
+def _resolve_passkey_store_path(stats_dir: Path) -> Path:
+    configured = os.getenv("PASSKEY_STORE_PATH", "").strip()
+    if configured:
+        return Path(configured).expanduser()
+    return stats_dir / ".passkeys.json"
 
 
 def _seed_stats_dir(stats_dir: Path, bundled_stats_dir: Path) -> None:
@@ -153,66 +201,103 @@ def _seed_stats_dir(stats_dir: Path, bundled_stats_dir: Path) -> None:
         try:
             shutil.copy2(item, target)
         except OSError:
-            # Best effort: continue if a single file cannot be copied.
             continue
 
 
-class _AuthRequiredMiddleware:
-    def __init__(self, app: Flask, downstream, login_endpoint: str = "/login") -> None:
-        self._app = app
-        self._downstream = downstream
-        self._login_endpoint = login_endpoint
+def _utc_now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
-    def __call__(self, environ, start_response):
-        serializer = self._app.session_interface.get_signing_serializer(self._app)
-        cookie_name = self._app.config["SESSION_COOKIE_NAME"]
-        authenticated = False
 
-        if serializer is not None:
-            request = Request(environ)
-            raw_cookie = request.cookies.get(cookie_name)
-            if raw_cookie:
-                max_age = int(self._app.permanent_session_lifetime.total_seconds())
-                try:
-                    data = serializer.loads(raw_cookie, max_age=max_age)
-                except Exception:
-                    data = {}
-                authenticated = bool(
-                    data.get("private_authenticated") or data.get("stats_authenticated")
-                )
+class _SlidingWindowRateLimiter:
+    def __init__(self) -> None:
+        self._events: dict[str, list[float]] = {}
+        self._lock = threading.Lock()
 
-        if authenticated:
-            return self._downstream(environ, start_response)
+    def is_limited(self, bucket: str, key: str, limit: int, window_seconds: int) -> bool:
+        now = time.time()
+        threshold = now - window_seconds
+        composite_key = f"{bucket}:{key}"
 
-        request = Request(environ)
-        current_path = f"{request.script_root}{request.path}"
-        if request.query_string:
-            current_path = f"{current_path}?{request.query_string.decode('utf-8', errors='ignore')}"
-        login_location = f"{self._login_endpoint}?{urlencode({'next': current_path})}"
-        response = Response("", status=302, headers={"Location": login_location})
-        return response(environ, start_response)
+        with self._lock:
+            active = [timestamp for timestamp in self._events.get(composite_key, []) if timestamp >= threshold]
+            limited = len(active) >= limit
+            if not limited:
+                active.append(now)
+            self._events[composite_key] = active
+        return limited
 
 
 def create_app() -> Flask:
     app = Flask(__name__)
     project_root = Path(__file__).resolve().parent
     split_dist_dir = project_root / "split_dist"
+    rate_limiter = _SlidingWindowRateLimiter()
     _load_local_env(project_root)
+
     app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", os.getenv("SECRET_KEY", os.urandom(32)))
-    # Trust Azure/App Service proxy headers for scheme/host/IP handling.
+    app.config["SESSION_COOKIE_NAME"] = os.getenv("SESSION_COOKIE_NAME", "lthm_private_session")
+    app.config["SESSION_COOKIE_HTTPONLY"] = True
+    app.config["SESSION_COOKIE_SAMESITE"] = os.getenv("SESSION_COOKIE_SAMESITE", "Lax")
+    app.config["SESSION_COOKIE_SECURE"] = _get_bool_env(
+        "SESSION_COOKIE_SECURE",
+        bool(os.getenv("WEBSITE_SITE_NAME", "").strip()),
+    )
+    app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(
+        minutes=_get_int_env("PRIVATE_SESSION_LIFETIME_MINUTES", 720)
+    )
+    app.config["PREFERRED_URL_SCHEME"] = "https"
+
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)
     bundled_stats_dir = project_root / "stats"
     stats_dir = _resolve_stats_dir(project_root)
     _seed_stats_dir(stats_dir=stats_dir, bundled_stats_dir=bundled_stats_dir)
     import_options = get_import_options()
+    passkey_store = PasskeyStore(_resolve_passkey_store_path(stats_dir))
 
-    def _private_password() -> str:
-        return os.getenv("PRIVATE_PASSWORD", os.getenv("STATS_PASSWORD", "")).strip()
+    def _passkey_rp_name() -> str:
+        return os.getenv("PASSKEY_RP_NAME", "Louie Private Tools").strip() or "Louie Private Tools"
 
-    def _login_secret() -> str:
-        return _normalize_login_secret(
-            os.getenv("PRIVATE_LOGIN_SECRET", os.getenv("LOGIN_SECRET", ""))
-        )
+    def _passkey_rp_id() -> str:
+        configured = os.getenv("PASSKEY_RP_ID", "").strip()
+        if configured:
+            return configured
+        if not os.getenv("WEBSITE_SITE_NAME", "").strip():
+            return "localhost"
+        return ""
+
+    def _passkey_allowed_origins() -> list[str]:
+        configured = _parse_csv_env("PASSKEY_ALLOWED_ORIGINS")
+        if configured:
+            return configured
+        if not os.getenv("WEBSITE_SITE_NAME", "").strip():
+            host = os.getenv("HOST", "localhost").strip() or "localhost"
+            port = _get_int_env("PORT", 8000)
+            return [f"http://{host}:{port}"]
+        return []
+
+    def _passkey_user_name() -> str:
+        return os.getenv("PASSKEY_USER_NAME", "louie").strip() or "louie"
+
+    def _passkey_user_display_name() -> str:
+        return os.getenv("PASSKEY_USER_DISPLAY_NAME", "Louie").strip() or "Louie"
+
+    def _passkey_setup_secret() -> str:
+        return os.getenv("PASSKEY_SETUP_SECRET", "").strip()
+
+    def _private_login_secret() -> str:
+        return os.getenv("PRIVATE_LOGIN_SECRET", os.getenv("LOGIN_SECRET", "")).strip()
+
+    def _passkey_runtime_ready() -> bool:
+        return bool(_passkey_rp_id() and _passkey_allowed_origins())
+
+    def _login_entry_url(next_path: str = "") -> str:
+        secret = _private_login_secret()
+        params: dict[str, str] = {}
+        if next_path:
+            params["next"] = next_path
+        if secret:
+            return url_for("secret_login_page", login_secret=secret, **params)
+        return url_for("login_page", **params)
 
     def _login_url(next_path: str = "") -> str:
         params: dict[str, str] = {}
@@ -233,28 +318,239 @@ def create_app() -> Flask:
         parsed = urlparse(candidate)
         if parsed.scheme or parsed.netloc:
             return url_for("private_nav")
-        allowed_prefixes = ("/stats", "/split", "/nav")
+        allowed_prefixes = ("/stats", "/split", "/nav", "/passkeys")
         if candidate == "/login":
             return url_for("private_nav")
         if not candidate.startswith(allowed_prefixes):
             return url_for("private_nav")
         return candidate
 
+    def _get_client_ip() -> str:
+        forwarded = request.headers.get("X-Forwarded-For", "")
+        if forwarded:
+            return forwarded.split(",")[0].strip()
+        return request.remote_addr or "unknown"
+
+    def _session_client_id() -> str:
+        client_id = session.get("_client_id")
+        if isinstance(client_id, str) and client_id:
+            return client_id
+        client_id = secrets.token_urlsafe(16)
+        session["_client_id"] = client_id
+        return client_id
+
+    def _csrf_token() -> str:
+        token = session.get("_csrf_token")
+        if isinstance(token, str) and token:
+            return token
+        token = secrets.token_urlsafe(32)
+        session["_csrf_token"] = token
+        return token
+
+    def _check_rate_limit(bucket: str, limit: int, window_seconds: int, key: Optional[str] = None) -> bool:
+        identifier = key or _session_client_id()
+        return (
+            rate_limiter.is_limited(bucket, f"ip:{_get_client_ip()}", limit, window_seconds)
+            or rate_limiter.is_limited(bucket, f"client:{identifier}", limit, window_seconds)
+        )
+
+    def _same_origin_request() -> bool:
+        target = urlparse(request.host_url)
+        for header_name in ("Origin", "Referer"):
+            candidate = request.headers.get(header_name, "").strip()
+            if not candidate:
+                continue
+            parsed = urlparse(candidate)
+            if parsed.scheme == target.scheme and parsed.netloc == target.netloc:
+                return True
+        return False
+
+    def _require_csrf(allow_same_origin_fallback: bool = False) -> None:
+        submitted = request.form.get("csrf_token", "") or request.headers.get("X-CSRF-Token", "")
+        expected = _csrf_token()
+        if submitted and secrets.compare_digest(submitted, expected):
+            return
+        if allow_same_origin_fallback and _same_origin_request():
+            return
+        abort(400, description="Invalid CSRF token.")
+
+    def _handle_passkey_store_error(exc: PasskeyStoreError) -> None:
+        app.logger.error("Passkey store failure: %s", exc)
+        abort(500, description="Passkey store is invalid.")
+
+    def _passkey_credentials() -> list[StoredCredential]:
+        try:
+            return passkey_store.credentials()
+        except PasskeyStoreError as exc:
+            _handle_passkey_store_error(exc)
+        return []
+
+    def _passkey_count() -> int:
+        try:
+            return passkey_store.credential_count()
+        except PasskeyStoreError as exc:
+            _handle_passkey_store_error(exc)
+        return 0
+
+    def _passkey_has_credentials() -> bool:
+        return _passkey_count() > 0
+
+    def _passkey_user_handle_b64url() -> str:
+        try:
+            return passkey_store.user_handle_b64url()
+        except PasskeyStoreError as exc:
+            _handle_passkey_store_error(exc)
+        return ""
+
+    def _passkey_get_credential(credential_id: str) -> Optional[StoredCredential]:
+        try:
+            return passkey_store.get_credential(credential_id)
+        except PasskeyStoreError as exc:
+            _handle_passkey_store_error(exc)
+        return None
+
     def _is_private_authenticated() -> bool:
         return bool(session.get("private_authenticated") or session.get("stats_authenticated"))
 
+    def _login_gate_required() -> bool:
+        return bool(_private_login_secret())
+
+    def _login_gate_passed() -> bool:
+        if not _login_gate_required():
+            return True
+        return bool(session.get("private_login_secret_passed"))
+
+    def _accept_login_secret(candidate: str) -> bool:
+        configured_secret = _private_login_secret()
+        if not configured_secret:
+            return True
+        if not candidate:
+            return False
+        if not hmac.compare_digest(candidate, configured_secret):
+            return False
+        session["private_login_secret_passed"] = True
+        return True
+
+    def _secret_login_handler(candidate_secret: str):
+        if not _accept_login_secret(candidate_secret.strip()):
+            abort(404)
+
+        next_path = _safe_next_path(request.args.get("next", ""))
+        return redirect(_login_url(next_path))
+
+    def _clear_pending_passkey_state() -> None:
+        session.pop("passkey_registration_state", None)
+        session.pop("passkey_authentication_state", None)
+        session.pop("passkey_bootstrap_user_handle_b64url", None)
+
+    def _pop_pending_state(key: str) -> Optional[dict[str, Any]]:
+        payload = session.pop(key, None)
+        if not isinstance(payload, dict):
+            return None
+        issued_at = payload.get("issued_at")
+        if not isinstance(issued_at, (int, float)):
+            return None
+        if (time.time() - float(issued_at)) > PASSKEY_CEREMONY_TTL_SECONDS:
+            return None
+        return payload
+
+    def _is_setup_unlocked() -> bool:
+        raw_value = session.get("passkey_setup_unlocked_at")
+        if not isinstance(raw_value, (int, float)):
+            return False
+        if (time.time() - float(raw_value)) > PASSKEY_SETUP_TTL_SECONDS:
+            session.pop("passkey_setup_unlocked_at", None)
+            return False
+        return True
+
+    def _unlock_setup() -> None:
+        session["passkey_setup_unlocked_at"] = time.time()
+
+    def _clear_setup_unlock() -> None:
+        session.pop("passkey_setup_unlocked_at", None)
+
+    def _default_passkey_label(existing_count: int) -> str:
+        if existing_count == 0:
+            return "Primary passkey"
+        return f"Passkey {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+
+    def _login_state(next_path: str) -> dict[str, Any]:
+        count = _passkey_count()
+        setup_unlocked = _is_setup_unlocked()
+        setup_secret_configured = bool(_passkey_setup_secret())
+        runtime_ready = _passkey_runtime_ready()
+
+        if count > 0 and runtime_ready:
+            state = "authenticate"
+        elif count == 0 and setup_unlocked and runtime_ready:
+            state = "bootstrap"
+        elif count == 0 and setup_secret_configured:
+            state = "setup-secret"
+        else:
+            state = "unavailable"
+
+        return {
+            "next_path": next_path,
+            "passkey_state": state,
+            "passkey_count": count,
+            "setup_secret_configured": setup_secret_configured,
+            "setup_unlocked": setup_unlocked,
+            "passkey_runtime_ready": runtime_ready,
+            "passkey_store_path": str(passkey_store.path),
+            "passkey_client_config": {
+                "nextPath": next_path,
+                "csrfToken": _csrf_token(),
+                "setupUrl": url_for("passkey_setup_secret_submit"),
+                "registerOptionsUrl": url_for("passkey_register_options"),
+                "registerVerifyUrl": url_for("passkey_register_verify"),
+                "authenticateOptionsUrl": url_for("passkey_authenticate_options"),
+                "authenticateVerifyUrl": url_for("passkey_authenticate_verify"),
+                "passkeysUrl": url_for("passkey_management"),
+            },
+        }
+
+    def _management_context(feedback: Optional[dict[str, str]] = None) -> dict[str, Any]:
+        credentials = _passkey_credentials()
+        if feedback is None:
+            feedback = session.pop("passkey_feedback", None)
+        return {
+            "passkey_feedback": feedback,
+            "credentials": [
+                {
+                    "credential_id": credential.credential_id,
+                    "label": credential.label,
+                    "created_at": credential.created_at,
+                    "last_used_at": credential.last_used_at,
+                    "device_type": credential.device_type.replace("_", " "),
+                    "backed_up": credential.backed_up,
+                    "transports": ", ".join(credential.transports) if credential.transports else "unknown",
+                }
+                for credential in credentials
+            ],
+            "can_remove": len(credentials) > 1,
+            "passkey_client_config": {
+                "nextPath": url_for("passkey_management"),
+                "csrfToken": _csrf_token(),
+                "registerOptionsUrl": url_for("passkey_register_options"),
+                "registerVerifyUrl": url_for("passkey_register_verify"),
+                "passkeysUrl": url_for("passkey_management"),
+            },
+        }
+
     @app.context_processor
     def inject_private_session_state():
-        return {"private_session_authenticated": _is_private_authenticated()}
+        return {
+            "private_session_authenticated": _is_private_authenticated(),
+            "csrf_token": _csrf_token(),
+        }
 
     def _private_auth_redirect():
-        if not _private_password():
-            abort(503, description="PRIVATE_PASSWORD or STATS_PASSWORD is not configured.")
         if _is_private_authenticated():
             return None
-
         next_target = request.full_path if request.query_string else request.path
-        return redirect(_signed_out_url(next_target))
+        if _login_gate_required() and not _login_gate_passed():
+            return redirect(_signed_out_url(next_target))
+        return redirect(_login_url(next_target))
 
     def _import_context(
         feedback: Optional[Dict[str, str]] = None,
@@ -276,69 +572,273 @@ def create_app() -> Flask:
     def home():
         return render_template("index.html", site=SITE_DATA)
 
+    @app.get("/favicon.ico")
+    def favicon_ico():
+        return send_from_directory(app.static_folder, "favicon.ico", mimetype="image/x-icon")
+
+    @app.get("/apple-touch-icon.png")
+    def apple_touch_icon():
+        return send_from_directory(app.static_folder, "apple-touch-icon.png", mimetype="image/png")
+
     @app.get("/not-signed-in")
     def signed_out_page():
         return render_template(
             "not_signed_in.html",
             next_path=_safe_next_path(request.args.get("next", "")),
+            login_link_available=_login_gate_passed(),
+            secret_login_url=_login_entry_url(_safe_next_path(request.args.get("next", ""))),
         )
 
     @app.get("/login")
     def login_page():
-        secret = _normalize_login_secret(request.args.get("secret", ""))
-        configured_secret = _login_secret()
-        if not configured_secret or not hmac.compare_digest(secret, configured_secret):
-            abort(404)
-
-        if not _private_password():
-            return render_template(
-                "login.html",
-                error="Set PRIVATE_PASSWORD or STATS_PASSWORD before opening this page.",
-                next_path=url_for("private_nav"),
-                login_secret=secret,
-                password_configured=False,
-            )
-
         if _is_private_authenticated():
             next_path = _safe_next_path(request.args.get("next", ""))
             return redirect(next_path if next_path != url_for("private_nav") else url_for("private_nav"))
 
-        return render_template(
-            "login.html",
-            error=None,
-            login_secret=secret,
-            next_path=_safe_next_path(request.args.get("next", "")),
-            password_configured=True,
-        )
-
-    @app.post("/login")
-    def login_submit():
-        submitted_secret = _normalize_login_secret(request.form.get("login_secret", ""))
-        if not hmac.compare_digest(submitted_secret, _login_secret()):
+        error = session.pop("login_error", None)
+        next_path = _safe_next_path(request.args.get("next", ""))
+        if _login_gate_required() and not _login_gate_passed():
             abort(404)
+        return render_template("login.html", error=error, **_login_state(next_path))
 
-        configured_password = _private_password()
-        if not configured_password:
-            abort(503, description="PRIVATE_PASSWORD or STATS_PASSWORD is not configured.")
+    @app.get("/<login_secret>/login")
+    def secret_login_page(login_secret: str):
+        return _secret_login_handler(login_secret)
 
-        candidate = request.form.get("password", "")
-        next_path = _safe_next_path(request.form.get("next_path", ""))
-        if hmac.compare_digest(candidate, configured_password):
-            # Keep private access decisions in Flask's signed session cookie.
-            session["private_authenticated"] = True
-            session["stats_authenticated"] = True
-            return redirect(next_path)
+    @app.post("/auth/passkeys/setup-secret")
+    def passkey_setup_secret_submit():
+        _require_csrf()
+        if _check_rate_limit("setup_secret", limit=5, window_seconds=900):
+            return jsonify({"error": "Setup failed."}), 429
 
-        return (
-            render_template(
-                "login.html",
-                error="Wrong password.",
-                login_secret=submitted_secret,
-                next_path=next_path,
-                password_configured=True,
+        payload = request.get_json(silent=True) or {}
+        secret = str(payload.get("secret", "")).strip()
+        if _passkey_has_credentials():
+            return jsonify({"error": "Setup failed."}), 400
+        configured_secret = _passkey_setup_secret()
+        if not configured_secret:
+            return jsonify({"error": "Setup failed."}), 503
+        if not secrets.compare_digest(secret, configured_secret):
+            return jsonify({"error": "Setup failed."}), 401
+
+        _unlock_setup()
+        return jsonify({"ok": True})
+
+    @app.post("/auth/passkeys/register/options")
+    def passkey_register_options():
+        _require_csrf()
+        if _check_rate_limit("passkey_register", limit=10, window_seconds=600):
+            return jsonify({"error": "Passkey request failed."}), 429
+        if not _passkey_runtime_ready():
+            return jsonify({"error": "Passkeys are not configured right now."}), 503
+
+        payload = request.get_json(silent=True) or {}
+        next_path = _safe_next_path(str(payload.get("nextPath", "")))
+        requested_label = str(payload.get("label", "")).strip()
+
+        credentials = _passkey_credentials()
+        bootstrap_allowed = not credentials and _is_setup_unlocked()
+        management_allowed = _is_private_authenticated()
+        if not bootstrap_allowed and not management_allowed:
+            return jsonify({"error": "Passkey request failed."}), 403
+
+        user_handle_b64url = _passkey_user_handle_b64url()
+        if not user_handle_b64url:
+            user_handle_b64url = session.get("passkey_bootstrap_user_handle_b64url", "")
+            if not isinstance(user_handle_b64url, str) or not user_handle_b64url:
+                user_handle_b64url = bytes_to_base64url(secrets.token_bytes(32))
+                session["passkey_bootstrap_user_handle_b64url"] = user_handle_b64url
+
+        challenge = secrets.token_bytes(32)
+        options = generate_registration_options(
+            rp_id=_passkey_rp_id(),
+            rp_name=_passkey_rp_name(),
+            user_name=_passkey_user_name(),
+            user_display_name=_passkey_user_display_name(),
+            user_id=base64url_to_bytes(user_handle_b64url),
+            challenge=challenge,
+            attestation=AttestationConveyancePreference.NONE,
+            authenticator_selection=AuthenticatorSelectionCriteria(
+                resident_key=ResidentKeyRequirement.REQUIRED,
+                require_resident_key=True,
+                user_verification=UserVerificationRequirement.REQUIRED,
             ),
-            401,
+            exclude_credentials=[credential.descriptor() for credential in credentials],
         )
+
+        session["passkey_registration_state"] = {
+            "challenge": bytes_to_base64url(challenge),
+            "issued_at": time.time(),
+            "label": requested_label or _default_passkey_label(len(credentials)),
+            "mode": "management" if management_allowed and credentials else "bootstrap",
+            "next_path": next_path,
+            "user_handle_b64url": user_handle_b64url,
+        }
+        return jsonify({"ok": True, "options": options_to_json_dict(options)})
+
+    @app.post("/auth/passkeys/register/verify")
+    def passkey_register_verify():
+        _require_csrf()
+        if _check_rate_limit("passkey_register", limit=10, window_seconds=600):
+            return jsonify({"error": "Passkey request failed."}), 429
+
+        state = _pop_pending_state("passkey_registration_state")
+        if not state:
+            return jsonify({"error": "Passkey request failed."}), 400
+
+        payload = request.get_json(silent=True) or {}
+        credential_payload = payload.get("credential")
+        if not isinstance(credential_payload, dict):
+            return jsonify({"error": "Passkey request failed."}), 400
+
+        try:
+            parsed_credential = parse_registration_credential_json(credential_payload)
+            verified = verify_registration_response(
+                credential=parsed_credential,
+                expected_challenge=base64url_to_bytes(state["challenge"]),
+                expected_rp_id=_passkey_rp_id(),
+                expected_origin=_passkey_allowed_origins(),
+                require_user_verification=True,
+            )
+        except Exception:
+            app.logger.exception("Passkey registration verification failed")
+            return jsonify({"error": "Passkey request failed."}), 400
+
+        response_payload = credential_payload.get("response", {})
+        transports = response_payload.get("transports", [])
+        if not isinstance(transports, list):
+            transports = []
+
+        credential = StoredCredential(
+            credential_id=bytes_to_base64url(verified.credential_id),
+            public_key=bytes_to_base64url(verified.credential_public_key),
+            sign_count=verified.sign_count,
+            transports=[str(item) for item in transports if isinstance(item, str)],
+            device_type=verified.credential_device_type.value,
+            backed_up=verified.credential_backed_up,
+            label=str(state.get("label", _default_passkey_label(0))),
+            created_at=_utc_now_iso(),
+            last_used_at="",
+        )
+
+        try:
+            passkey_store.add_credential(str(state["user_handle_b64url"]), credential)
+        except PasskeyStoreError as exc:
+            _handle_passkey_store_error(exc)
+
+        _clear_setup_unlock()
+        session.pop("passkey_bootstrap_user_handle_b64url", None)
+        session["private_authenticated"] = True
+        session["stats_authenticated"] = True
+        session.permanent = True
+        return jsonify({"ok": True, "redirectTo": _safe_next_path(str(state.get("next_path", "")))})
+
+    @app.post("/auth/passkeys/authenticate/options")
+    def passkey_authenticate_options():
+        _require_csrf()
+        if _check_rate_limit("passkey_auth", limit=12, window_seconds=600):
+            return jsonify({"error": "Sign-in failed."}), 429
+        if not _passkey_runtime_ready():
+            return jsonify({"error": "Passkeys are not configured right now."}), 503
+
+        credentials = _passkey_credentials()
+        if not credentials:
+            return jsonify({"error": "Sign-in failed."}), 400
+
+        payload = request.get_json(silent=True) or {}
+        next_path = _safe_next_path(str(payload.get("nextPath", "")))
+        challenge = secrets.token_bytes(32)
+        options = generate_authentication_options(
+            rp_id=_passkey_rp_id(),
+            challenge=challenge,
+            allow_credentials=[credential.descriptor() for credential in credentials],
+            user_verification=UserVerificationRequirement.REQUIRED,
+        )
+        session["passkey_authentication_state"] = {
+            "challenge": bytes_to_base64url(challenge),
+            "issued_at": time.time(),
+            "next_path": next_path,
+        }
+        return jsonify({"ok": True, "options": options_to_json_dict(options)})
+
+    @app.post("/auth/passkeys/authenticate/verify")
+    def passkey_authenticate_verify():
+        _require_csrf()
+        if _check_rate_limit("passkey_auth", limit=12, window_seconds=600):
+            return jsonify({"error": "Sign-in failed."}), 429
+
+        state = _pop_pending_state("passkey_authentication_state")
+        if not state:
+            return jsonify({"error": "Sign-in failed."}), 400
+
+        payload = request.get_json(silent=True) or {}
+        credential_payload = payload.get("credential")
+        if not isinstance(credential_payload, dict):
+            return jsonify({"error": "Sign-in failed."}), 400
+
+        credential_id = credential_payload.get("id")
+        if not isinstance(credential_id, str) or not credential_id:
+            return jsonify({"error": "Sign-in failed."}), 400
+
+        stored_credential = _passkey_get_credential(credential_id)
+        if stored_credential is None:
+            return jsonify({"error": "Sign-in failed."}), 400
+
+        try:
+            parsed_credential = parse_authentication_credential_json(credential_payload)
+            verified = verify_authentication_response(
+                credential=parsed_credential,
+                expected_challenge=base64url_to_bytes(state["challenge"]),
+                expected_rp_id=_passkey_rp_id(),
+                expected_origin=_passkey_allowed_origins(),
+                credential_public_key=base64url_to_bytes(stored_credential.public_key),
+                credential_current_sign_count=stored_credential.sign_count,
+                require_user_verification=True,
+            )
+        except Exception:
+            app.logger.exception("Passkey authentication verification failed")
+            return jsonify({"error": "Sign-in failed."}), 400
+
+        try:
+            passkey_store.update_credential(
+                credential_id=stored_credential.credential_id,
+                sign_count=verified.new_sign_count,
+                device_type=verified.credential_device_type.value,
+                backed_up=verified.credential_backed_up,
+                last_used_at=_utc_now_iso(),
+            )
+        except PasskeyStoreError as exc:
+            _handle_passkey_store_error(exc)
+
+        session["private_authenticated"] = True
+        session["stats_authenticated"] = True
+        session.permanent = True
+        return jsonify({"ok": True, "redirectTo": _safe_next_path(str(state.get("next_path", "")))})
+
+    @app.get("/passkeys")
+    def passkey_management():
+        auth_redirect = _private_auth_redirect()
+        if auth_redirect:
+            return auth_redirect
+        return render_template("passkeys.html", **_management_context())
+
+    @app.post("/passkeys/remove")
+    def passkey_remove():
+        auth_redirect = _private_auth_redirect()
+        if auth_redirect:
+            return auth_redirect
+        _require_csrf()
+
+        credential_id = request.form.get("credential_id", "").strip()
+        feedback: dict[str, str]
+        try:
+            passkey_store.remove_credential(credential_id)
+            feedback = {"level": "ok", "text": "Passkey removed."}
+        except PasskeyStoreError as exc:
+            feedback = {"level": "error", "text": str(exc)}
+
+        session["passkey_feedback"] = feedback
+        return redirect(url_for("passkey_management"))
 
     @app.get("/nav")
     def private_nav():
@@ -365,6 +865,9 @@ def create_app() -> Flask:
     def split_api_extract_expenses():
         if not _is_private_authenticated():
             abort(401)
+        _require_csrf(allow_same_origin_fallback=True)
+        if _check_rate_limit("split_extract", limit=20, window_seconds=600):
+            return jsonify({"error": "Too many requests."}), 429
 
         api_key = os.getenv("OPENAI_API_KEY", "").strip()
         if not api_key:
@@ -430,12 +933,14 @@ def create_app() -> Flask:
             with urlopen(api_request, timeout=90) as response:
                 response_payload = json.load(response)
         except HTTPError as exc:
-            details = exc.read().decode("utf-8", errors="replace")
-            return jsonify({"error": f"OpenAI request failed: {details}"}), exc.code
+            app.logger.warning("OpenAI request failed with status %s", exc.code)
+            return jsonify({"error": "OpenAI request failed."}), 502
         except URLError as exc:
-            return jsonify({"error": f"OpenAI request failed: {exc.reason}"}), 502
-        except Exception as exc:
-            return jsonify({"error": str(exc)}), 500
+            app.logger.warning("OpenAI request failed: %s", exc.reason)
+            return jsonify({"error": "OpenAI request failed."}), 502
+        except Exception:
+            app.logger.exception("Unexpected split extraction failure")
+            return jsonify({"error": "Unexpected extraction failure."}), 500
 
         text_block = _extract_split_text_output(response_payload)
         cleaned = text_block.replace("```json", "").replace("```", "").strip()
@@ -443,7 +948,7 @@ def create_app() -> Flask:
         try:
             parsed = json.loads(cleaned)
         except json.JSONDecodeError:
-            return jsonify({"error": f"OpenAI returned invalid JSON: {text_block}"}), 502
+            return jsonify({"error": "OpenAI returned invalid JSON."}), 502
 
         expense_items: Any = parsed
         if isinstance(parsed, dict):
@@ -477,31 +982,25 @@ def create_app() -> Flask:
             target = split_dist_dir / path
             if path and target.exists() and target.is_file():
                 return send_from_directory(split_dist_dir, path)
-            return send_from_directory(split_dist_dir, "index.html")
+            response = send_from_directory(split_dist_dir, "index.html")
+            response.set_cookie(
+                "split_csrf_token",
+                _csrf_token(),
+                secure=app.config["SESSION_COOKIE_SECURE"],
+                httponly=False,
+                samesite=app.config["SESSION_COOKIE_SAMESITE"],
+            )
+            return response
 
         abort(404)
 
     @app.post("/logout")
     def logout():
-        session.pop("private_authenticated", None)
-        session.pop("stats_authenticated", None)
+        _require_csrf()
+        session.clear()
+        if _login_gate_required():
+            return redirect(_signed_out_url())
         return redirect(_login_url())
-
-    @app.get("/dans-penis")
-    def dans_penis():
-        art = """⠀⠀⠀⠀⠀⠀⠀⣠⣤⣤⣤⣤⣤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⢰⡿⠋⠁⠀⠀⠈⠉⠙⠻⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⢀⣿⠇⠀⢀⣴⣶⡾⠿⠿⠿⢿⣿⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⣀⣀⣸⡿⠀⠀⢸⣿⣇⠀⠀⠀⠀⠀⠀⠙⣷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⣾⡟⠛⣿⡇⠀⠀⢸⣿⣿⣷⣤⣤⣤⣤⣶⣶⣿⠇⠀⠀⠀⠀⠀⠀⠀⣀⠀⠀
-⢀⣿⠀⢀⣿⡇⠀⠀⠀⠻⢿⣿⣿⣿⣿⣿⠿⣿⡏⠀⠀⠀⠀⢴⣶⣶⣿⣿⣿⣆
-⢸⣿⠀⢸⣿⡇⠀⠀⠀⠀⠀⠈⠉⠁⠀⠀⠀⣿⡇⣀⣠⣴⣾⣮⣝⠿⠿⠿⣻⡟
-⢸⣿⠀⠘⣿⡇⠀⠀⠀⠀⠀⠀⠀⣠⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠁⠉⠀
-⠸⣿⠀⠀⣿⡇⠀⠀⠀⠀⠀⣠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠟⠉⠀⠀⠀⠀
-⠀⠻⣷⣶⣿⣇⠀⠀⠀⢠⣼⣿⣿⣿⣿⣿⣿⣿⣛⣛⣻⠉⠁⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⢸⣿⠀⠀⠀⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⢸⣿⣀⣀⣀⣼⡿⢿⣿⣿⣿⣿⣿⡿⣿⣿⣿"""
-        return f"<pre>{art}</pre>"
 
     @app.get("/healthz")
     def healthz():
@@ -510,11 +1009,9 @@ def create_app() -> Flask:
     @app.get("/stats/login")
     def stats_login():
         next_path = _safe_next_path(request.args.get("next", url_for("stats_page")))
+        if _login_gate_required() and not _login_gate_passed():
+            return redirect(_signed_out_url(next_path))
         return redirect(_login_url(next_path))
-
-    @app.post("/stats/login")
-    def stats_login_submit():
-        return login_submit()
 
     @app.post("/stats/logout")
     def stats_logout():
@@ -568,6 +1065,7 @@ def create_app() -> Flask:
         auth_redirect = _private_auth_redirect()
         if auth_redirect:
             return auth_redirect
+        _require_csrf()
 
         source = request.form.get("source", "").strip()
         payload = request.form.get("payload", "")

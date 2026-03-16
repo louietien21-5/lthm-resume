@@ -1,6 +1,6 @@
 # lthm-resume
 
-Personal resume/portfolio site with a private, password-protected stats dashboard.
+Personal resume/portfolio site with a private stats dashboard and tools area.
 
 ## What is in this repo
 
@@ -43,8 +43,17 @@ pip install -r requirements.txt
 
 ## Environment variables
 
-- `STATS_PASSWORD` (required for `/stats` access)
-- `FLASK_SECRET_KEY` (recommended; fallback is random per process start)
+- `FLASK_SECRET_KEY` (required in production)
+- `PASSKEY_SETUP_SECRET` (required until the first passkey is registered)
+- `PASSKEY_RP_NAME` (optional, default `Louie Private Tools`)
+- `PASSKEY_RP_ID` (optional locally, required explicitly in production)
+- `PASSKEY_ALLOWED_ORIGINS` (optional locally, required explicitly in production)
+- `PASSKEY_USER_NAME` (optional, default `louie`)
+- `PASSKEY_USER_DISPLAY_NAME` (optional, default `Louie`)
+- `PASSKEY_STORE_PATH` (optional override for the passkey JSON file)
+- `PRIVATE_LOGIN_SECRET` (optional obscurity gate for `/login`; not primary auth)
+- `PRIVATE_SESSION_LIFETIME_MINUTES` (optional, default `720`)
+- `SESSION_COOKIE_SECURE` (set `true` on deployed hosts)
 - `STATS_DIR` (optional override for stats file storage location)
 - `PORT` (optional, default `8000`)
 - `HOST` (optional, default `localhost`)
@@ -53,8 +62,14 @@ pip install -r requirements.txt
 Example:
 
 ```bash
-export STATS_PASSWORD="your-password"
 export FLASK_SECRET_KEY="replace-with-long-random-secret"
+export PASSKEY_SETUP_SECRET="generate-a-random-bootstrap-secret"
+export PASSKEY_RP_ID="localhost"
+export PASSKEY_ALLOWED_ORIGINS="http://localhost:8000"
+export PASSKEY_USER_NAME="louie"
+export PASSKEY_USER_DISPLAY_NAME="Louie"
+export PRIVATE_LOGIN_SECRET="a-long-random-login-url-secret"
+export SESSION_COOKIE_SECURE="false"
 export STATS_DIR="./stats"
 ```
 
@@ -104,12 +119,14 @@ Notes:
 - Events are deduplicated by `(source, event text, timestamp)`.
 - Importing a full file repeatedly is supported.
 
-## Private dashboard flow
+## Private access flow
 
-1. Open `/stats/login`
-2. Authenticate with `STATS_PASSWORD`
-3. Use `/stats` for analytics/charts
-4. Use `/stats/import` to paste full plaintext exports into a selected source file
+1. Open `/login`
+   If `PRIVATE_LOGIN_SECRET` is set, use `/<your-secret>/login`
+2. If no passkey exists yet, unlock setup with `PASSKEY_SETUP_SECRET`
+3. Register the first passkey in the browser
+4. Sign in with that passkey for `/nav`, `/stats`, `/split`, and `/passkeys`
+5. Register a second passkey from `/passkeys` for recovery
 
 ## Deploying to Azure App Service
 
@@ -120,9 +137,15 @@ This repo includes:
 
 Recommended app settings in Azure:
 
-- `STATS_PASSWORD`
 - `FLASK_SECRET_KEY`
+- `PASSKEY_SETUP_SECRET=...`
+- `PASSKEY_RP_ID=your.custom.domain`
+- `PASSKEY_ALLOWED_ORIGINS=https://your.custom.domain`
+- `PASSKEY_RP_NAME=Louie Private Tools`
+- `PASSKEY_STORE_PATH=/home/site/data/stats/.passkeys.json`
+- `PRIVATE_LOGIN_SECRET=...` (optional)
 - `STATS_DIR=/home/site/data/stats`
+- `SESSION_COOKIE_SECURE=true`
 - `SCM_DO_BUILD_DURING_DEPLOYMENT=true` (if using Oryx build)
 
 Also ensure `requirements.txt` is present (it is) so dependencies install on deploy.
@@ -132,6 +155,7 @@ Behavior notes on Azure:
 - If `STATS_DIR` is not set, the app auto-uses `/home/site/data/stats` when running on App Service.
 - On first startup in Azure, it seeds that directory from the repo `stats/` files if it is empty.
 - This avoids write failures when the deployed app package is mounted read-only.
+- Keep the app single-instance if you use the file-backed passkey store on App Service.
 
 ### Deployment troubleshooting (`409 Conflict` from OneDeploy)
 

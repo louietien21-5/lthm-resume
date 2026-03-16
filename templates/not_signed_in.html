@@ -26,9 +26,16 @@
   <main class="login-wrap panel">
     <p class="badge">Restricted access</p>
     <h1>Not signed in</h1>
+    {% if login_link_available %}
+    <p class="muted">This page is private. Sign in to continue.</p>
+    {% else %}
     <p class="muted">This page is private. You need the private login URL to continue.</p>
+    {% endif %}
 
     <div class="login-actions">
+      {% if login_link_available %}
+      <a class="ghost-link" href="{{ secret_login_url }}">Sign in</a>
+      {% endif %}
       <a class="ghost-link" href="{{ url_for('home') }}">Back to Portfolio</a>
     </div>
   </main>

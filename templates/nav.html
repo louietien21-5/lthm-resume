@@ -44,6 +44,11 @@
         <h2>Plaintext import</h2>
         <p class="muted">Paste exports directly into the stats files stored in this repo.</p>
       </a>
+      <a class="panel nav-card" href="{{ url_for('passkey_management') }}">
+        <p class="badge">Security</p>
+        <h2>Manage passkeys</h2>
+        <p class="muted">Add a backup passkey or remove an old one.</p>
+      </a>
     </section>
 
     <div class="login-actions">
@@ -58,6 +63,7 @@
       </button>
       <a class="ghost-link" href="{{ url_for('home') }}">Back to Portfolio</a>
       <form method="post" action="{{ url_for('logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <button type="submit" class="lock-button">Lock</button>
       </form>
     </div>

@@ -890,6 +890,58 @@ th {
   font-size: 0.9rem;
 }
 
+.hidden-message {
+  display: none;
+}
+
+.passkey-wrap {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.passkey-panel {
+  margin-top: 0.25rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.passkey-panel h2,
+.passkey-card h3 {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.passkey-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.passkey-list {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.passkey-card {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 0.9rem 1rem;
+  border-radius: 14px;
+  border: 1px solid var(--panel-line);
+  background: var(--ghost-bg);
+}
+
+.passkey-card form {
+  margin: 0;
+}
+
+.passkey-card .ghost-link[disabled] {
+  cursor: not-allowed;
+  opacity: 0.55;
+  transform: none;
+}
+
 code {
   font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
 }

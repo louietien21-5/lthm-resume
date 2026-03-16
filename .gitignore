@@ -3,5 +3,7 @@ __pycache__/
 *.pyc
 .env
 .env.local
+.passkeys.json
+.passkeys.json.*
 .vscode/
 .DS_Store
