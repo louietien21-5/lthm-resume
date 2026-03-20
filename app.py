@@ -1,6 +1,5 @@
 import json
 import os
-import hmac
 import secrets
 import shutil
 import threading
@@ -284,32 +283,14 @@ def create_app() -> Flask:
     def _passkey_setup_secret() -> str:
         return os.getenv("PASSKEY_SETUP_SECRET", "").strip()
 
-    def _private_login_secret() -> str:
-        return os.getenv("PRIVATE_LOGIN_SECRET", os.getenv("LOGIN_SECRET", "")).strip()
-
     def _passkey_runtime_ready() -> bool:
         return bool(_passkey_rp_id() and _passkey_allowed_origins())
-
-    def _login_entry_url(next_path: str = "") -> str:
-        secret = _private_login_secret()
-        params: dict[str, str] = {}
-        if next_path:
-            params["next"] = next_path
-        if secret:
-            return url_for("secret_login_page", login_secret=secret, **params)
-        return url_for("login_page", **params)
 
     def _login_url(next_path: str = "") -> str:
         params: dict[str, str] = {}
         if next_path:
             params["next"] = next_path
         return url_for("login_page", **params)
-
-    def _signed_out_url(next_path: str = "") -> str:
-        params: dict[str, str] = {}
-        if next_path:
-            params["next"] = next_path
-        return url_for("signed_out_page", **params)
 
     def _safe_next_path(candidate: str) -> str:
         if not candidate:
@@ -411,32 +392,6 @@ def create_app() -> Flask:
 
     def _is_private_authenticated() -> bool:
         return bool(session.get("private_authenticated") or session.get("stats_authenticated"))
-
-    def _login_gate_required() -> bool:
-        return bool(_private_login_secret())
-
-    def _login_gate_passed() -> bool:
-        if not _login_gate_required():
-            return True
-        return bool(session.get("private_login_secret_passed"))
-
-    def _accept_login_secret(candidate: str) -> bool:
-        configured_secret = _private_login_secret()
-        if not configured_secret:
-            return True
-        if not candidate:
-            return False
-        if not hmac.compare_digest(candidate, configured_secret):
-            return False
-        session["private_login_secret_passed"] = True
-        return True
-
-    def _secret_login_handler(candidate_secret: str):
-        if not _accept_login_secret(candidate_secret.strip()):
-            abort(404)
-
-        next_path = _safe_next_path(request.args.get("next", ""))
-        return redirect(_login_url(next_path))
 
     def _clear_pending_passkey_state() -> None:
         session.pop("passkey_registration_state", None)
@@ -548,8 +503,6 @@ def create_app() -> Flask:
         if _is_private_authenticated():
             return None
         next_target = request.full_path if request.query_string else request.path
-        if _login_gate_required() and not _login_gate_passed():
-            return redirect(_signed_out_url(next_target))
         return redirect(_login_url(next_target))
 
     def _import_context(
@@ -580,15 +533,6 @@ def create_app() -> Flask:
     def apple_touch_icon():
         return send_from_directory(app.static_folder, "apple-touch-icon.png", mimetype="image/png")
 
-    @app.get("/not-signed-in")
-    def signed_out_page():
-        return render_template(
-            "not_signed_in.html",
-            next_path=_safe_next_path(request.args.get("next", "")),
-            login_link_available=_login_gate_passed(),
-            secret_login_url=_login_entry_url(_safe_next_path(request.args.get("next", ""))),
-        )
-
     @app.get("/login")
     def login_page():
         if _is_private_authenticated():
@@ -597,13 +541,7 @@ def create_app() -> Flask:
 
         error = session.pop("login_error", None)
         next_path = _safe_next_path(request.args.get("next", ""))
-        if _login_gate_required() and not _login_gate_passed():
-            abort(404)
         return render_template("login.html", error=error, **_login_state(next_path))
-
-    @app.get("/<login_secret>/login")
-    def secret_login_page(login_secret: str):
-        return _secret_login_handler(login_secret)
 
     @app.post("/auth/passkeys/setup-secret")
     def passkey_setup_secret_submit():
@@ -998,8 +936,6 @@ def create_app() -> Flask:
     def logout():
         _require_csrf()
         session.clear()
-        if _login_gate_required():
-            return redirect(_signed_out_url())
         return redirect(_login_url())
 
     @app.get("/healthz")
@@ -1009,8 +945,6 @@ def create_app() -> Flask:
     @app.get("/stats/login")
     def stats_login():
         next_path = _safe_next_path(request.args.get("next", url_for("stats_page")))
-        if _login_gate_required() and not _login_gate_passed():
-            return redirect(_signed_out_url(next_path))
         return redirect(_login_url(next_path))
 
     @app.post("/stats/logout")
