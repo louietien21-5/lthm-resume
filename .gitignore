@@ -7,3 +7,4 @@ __pycache__/
 .passkeys.json.*
 .vscode/
 .DS_Store
+.env*

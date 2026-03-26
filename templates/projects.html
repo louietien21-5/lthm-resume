@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ data.page_title }}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <style>
+    /* ——— PROJECTS PAGE EXTRAS ————————————————————— */
+
+    .projects-hero {
+      padding: 3rem 0 2rem;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.83rem;
+      color: var(--muted);
+      text-decoration: none;
+      margin-bottom: 1.6rem;
+      transition: color 130ms ease;
+    }
+    .back-link:hover { color: var(--accent); }
+    .back-link svg { flex-shrink: 0; }
+
+    .projects-hero h1 {
+      font-size: clamp(1.5rem, 3.5vw, 2rem);
+      font-weight: 700;
+      margin: 0 0 0.4rem;
+      letter-spacing: -0.02em;
+      white-space: normal;
+    }
+
+    .projects-hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.93rem;
+    }
+
+    /* ——— FILTER BAR —————————————————————————————— */
+
+    .filter-bar {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font: inherit;
+      font-size: 0.82rem;
+      padding: 0.28rem 0.72rem;
+      cursor: pointer;
+      transition: color 130ms ease, border-color 130ms ease, background-color 130ms ease;
+    }
+    .filter-btn:hover {
+      color: var(--ink);
+      border-color: var(--a-line);
+      background: var(--a-dim);
+    }
+    .filter-btn.is-active {
+      color: var(--accent);
+      border-color: var(--a-line);
+      background: var(--a-dim);
+      font-weight: 500;
+    }
+    .filter-btn:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--focus);
+    }
+
+    /* ——— PROJECT GRID ————————————————————————————— */
+
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.7rem;
+    }
+
+    .project-card {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 1.1rem 1.1rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      transition: border-color 150ms ease, box-shadow 150ms ease;
+      background: var(--surface);
+    }
+    .project-card:hover {
+      border-color: var(--a-line);
+      box-shadow: var(--shadow);
+    }
+
+    .project-card[data-hidden="true"] {
+      display: none;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .card-name {
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    .card-version {
+      font-size: 0.72rem;
+      color: var(--muted);
+      border: 1px solid var(--pill-ln);
+      background: var(--pill-bg);
+      border-radius: 999px;
+      padding: 0.12rem 0.48rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 0.05rem;
+    }
+
+    .card-desc {
+      margin: 0;
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.55;
+      flex: 1;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-top: 0.15rem;
+    }
+
+    .card-stack {
+      display: flex;
+      gap: 0.3rem;
+      flex-wrap: wrap;
+    }
+
+    .stack-tag {
+      font-size: 0.74rem;
+      border: 1px solid var(--tag-ln);
+      background: var(--tag-bg);
+      border-radius: 5px;
+      padding: 0.16rem 0.45rem;
+      color: var(--ink);
+    }
+
+    .card-category {
+      font-size: 0.72rem;
+      color: var(--faint);
+      font-weight: 500;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* ——— EMPTY STATE ————————————————————————————— */
+
+    .empty-state {
+      display: none;
+      text-align: center;
+      padding: 3rem 0;
+      color: var(--faint);
+      font-size: 0.9rem;
+      grid-column: 1 / -1;
+    }
+    .empty-state.is-visible { display: block; }
+
+    /* ——— COUNT ——————————————————————————————————— */
+
+    .project-count {
+      font-size: 0.8rem;
+      color: var(--faint);
+      margin-bottom: 0.9rem;
+    }
+
+    /* ——— RESPONSIVE ——————————————————————————————— */
+
+    @media (max-width: 560px) {
+      .project-grid { grid-template-columns: 1fr; }
+      .filter-bar { gap: 0.3rem; }
+    }
+  </style>
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div class="top-right-controls">
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">{{ data.theme.dark_label }}</button>
+  </div>
+
+  <main class="wrap">
+    <div class="projects-hero">
+      <a href="/" class="back-link">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+          <path d="M9 11L5 7l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back to portfolio
+      </a>
+      <p class="eyebrow">Side Projects &amp; Internal Tooling</p>
+      <h1>Things I've built</h1>
+      <p>A running list of projects — internal tools, automations, and web apps.</p>
+    </div>
+
+    <div class="filter-bar" id="filter-bar">
+      {% for f in data.filters %}
+      <button class="filter-btn{% if loop.first %} is-active{% endif %}" data-filter="{{ f }}">{{ f }}</button>
+      {% endfor %}
+    </div>
+
+    <p class="project-count" id="project-count"></p>
+
+    <div class="project-grid" id="project-grid">
+      {% for item in data.projects %}
+      <div class="project-card" data-category="{{ item.category }}">
+        <div class="card-top">
+          <h3 class="card-name">{{ item.name }}</h3>
+          {% if item.version %}
+          <span class="card-version">v{{ item.version }}</span>
+          {% endif %}
+        </div>
+        <p class="card-desc">{{ item.description }}</p>
+        <div class="card-footer">
+          <div class="card-stack">
+            {% for tag in item.stack %}
+            <span class="stack-tag">{{ tag }}</span>
+            {% endfor %}
+          </div>
+          <span class="card-category">{{ item.category }}</span>
+        </div>
+      </div>
+      {% endfor %}
+      <p class="empty-state" id="empty-state">No projects in this category.</p>
+    </div>
+  </main>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var btn = document.getElementById("theme-toggle");
+
+      function currentTheme() {
+        var explicit = root.getAttribute("data-theme");
+        if (explicit) return explicit;
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+
+      function renderLabel() {
+        var isDark = currentTheme() === "dark";
+        btn.textContent = isDark ? {{ data.theme.light_label | tojson }} : {{ data.theme.dark_label | tojson }};
+      }
+
+      btn.addEventListener("click", function () {
+        var next = currentTheme() === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        localStorage.setItem("theme", next);
+        renderLabel();
+      });
+
+      renderLabel();
+    })();
+
+    (function () {
+      var filterBar = document.getElementById("filter-bar");
+      var cards = Array.from(document.querySelectorAll(".project-card"));
+      var countEl = document.getElementById("project-count");
+      var emptyState = document.getElementById("empty-state");
+      var activeFilter = "All";
+
+      function updateCount(visible) {
+        countEl.textContent = visible + " project" + (visible === 1 ? "" : "s");
+      }
+
+      function applyFilter(filter) {
+        activeFilter = filter;
+        var visible = 0;
+        cards.forEach(function (card) {
+          var show = filter === "All" || card.dataset.category === filter;
+          card.dataset.hidden = show ? "false" : "true";
+          if (show) visible++;
+        });
+        emptyState.classList.toggle("is-visible", visible === 0);
+        updateCount(visible);
+      }
+
+      filterBar.addEventListener("click", function (e) {
+        var target = e.target.closest(".filter-btn");
+        if (!target) return;
+        filterBar.querySelectorAll(".filter-btn").forEach(function (b) {
+          b.classList.remove("is-active");
+        });
+        target.classList.add("is-active");
+        applyFilter(target.dataset.filter);
+      });
+
+      applyFilter("All");
+    })();
+  </script>
+</body>
+</html>

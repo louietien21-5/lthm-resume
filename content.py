@@ -1,3 +1,133 @@
+PROJECTS_DATA = {
+    "page_title": "Projects | Louie Hegeler-Meile",
+    "theme": {
+        "dark_label": "Dark Mode",
+        "light_label": "Light Mode",
+    },
+    "filters": ["All", "Node.js", "React", "Python", "PowerShell"],
+    "projects": [
+        {
+            "name": "215kbase",
+            "category": "Node.js",
+            "description": "Markdown-first internal knowledge base with a web editor, section/category browsing, and image upload.",
+            "stack": ["Node.js", "Express", "Markdown"],
+            "version": "1.11.0",
+        },
+        {
+            "name": "itkbase",
+            "category": "Node.js",
+            "description": "IT-focused knowledge base variant rebuilt around a new design direction with Entra SSO.",
+            "stack": ["Node.js", "Express", "Entra SSO"],
+            "version": "1.11.0",
+        },
+        {
+            "name": "nodekbase",
+            "category": "Node.js",
+            "description": "Earlier knowledge base iteration with added Entra SSO, rate limiting, and proxy-aware cookie controls.",
+            "stack": ["Node.js", "Express", "Entra SSO"],
+            "version": "1.9.3",
+        },
+        {
+            "name": "status-page",
+            "category": "Node.js",
+            "description": "Lightweight IT ops status page with live SSE updates, incident lifecycle management, soft-delete, and audit log.",
+            "stack": ["Node.js", "SSE", "JSON"],
+            "version": None,
+        },
+        {
+            "name": "erderfrokost",
+            "category": "Node.js",
+            "description": "Danish office lunch-bell tracker — who rang first today, race leaderboard, cooldown enforcement, and historical log.",
+            "stack": ["Node.js", "Express", "JSON"],
+            "version": None,
+        },
+        {
+            "name": "ferie-monday",
+            "category": "Node.js",
+            "description": "Holiday overview pulling vacation data from Monday.com with daily refresh, Azure AD SSO, and admin CRUD.",
+            "stack": ["Node.js", "Monday.com", "Azure AD"],
+            "version": None,
+        },
+        {
+            "name": "blog-builder",
+            "category": "Node.js",
+            "description": "Client-side HTML builder for creating consistent, structured WordPress blog posts.",
+            "stack": ["Node.js", "Express", "HTML"],
+            "version": None,
+        },
+        {
+            "name": "215parking",
+            "category": "Node.js",
+            "description": "Automates Avantpark license plate registration via Playwright with a minimal web UI and Danish plate validation.",
+            "stack": ["Node.js", "Playwright", "Express"],
+            "version": "1.2.3",
+        },
+        {
+            "name": "admin-index",
+            "category": "Node.js",
+            "description": "Minimal static portal index hosted on Azure App Service, serving as an internal landing page.",
+            "stack": ["Node.js", "Azure"],
+            "version": None,
+        },
+        {
+            "name": "orgdia",
+            "category": "React",
+            "description": "Local org chart editor built with React Flow, with Microsoft 365 manager sync via MS Graph API.",
+            "stack": ["React", "React Flow", "MS Graph"],
+            "version": None,
+        },
+        {
+            "name": "eotf-vendor-creation-form",
+            "category": "React",
+            "description": "Internal vendor creation form for structured procurement workflows.",
+            "stack": ["React", "Vite"],
+            "version": None,
+        },
+        {
+            "name": "lthm-resume",
+            "category": "Python",
+            "description": "This site — personal portfolio with a private stats dashboard built with Flask, Plotly, and HTMX.",
+            "stack": ["Python", "Flask", "Plotly"],
+            "version": None,
+        },
+        {
+            "name": "ms-admin-tools",
+            "category": "PowerShell",
+            "description": "Browser-based admin console for Microsoft 365 — mailbox delegation, on/offboarding, user creation and deletion.",
+            "stack": ["PowerShell", "M365", "Exchange"],
+            "version": None,
+        },
+        {
+            "name": "on-offboarding",
+            "category": "PowerShell",
+            "description": "PowerShell GUI wrapper using a host + config model for flexible on/offboarding automation.",
+            "stack": ["PowerShell", "GUI"],
+            "version": None,
+        },
+        {
+            "name": "Offboarding",
+            "category": "PowerShell",
+            "description": "Standalone PowerShell scripts for Microsoft 365 offboarding — auto-reply, license removal, and account cleanup.",
+            "stack": ["PowerShell", "M365"],
+            "version": None,
+        },
+        {
+            "name": "ps-gui-win",
+            "category": "PowerShell",
+            "description": "Mail Delegate Controller — PowerShell-backed web GUI for Exchange Online delegation management.",
+            "stack": ["PowerShell", "Exchange", "GUI"],
+            "version": None,
+        },
+        {
+            "name": "scripts",
+            "category": "PowerShell",
+            "description": "Collection of PowerShell scripts for identity management, group exports, and MS Graph operations.",
+            "stack": ["PowerShell", "MS Graph", "Exchange"],
+            "version": None,
+        },
+    ],
+}
+
 SITE_DATA = {
     "page_title": "Louie Hegeler-Meile | Portfolio",
     "theme": {
@@ -7,6 +137,7 @@ SITE_DATA = {
     "quick_nav": [
         {"href": "#about", "label": "About"},
         {"href": "#experience", "label": "Experience"},
+        {"href": "#projects", "label": "Projects"},
         {"href": "#skills", "label": "Skills"},
         {"href": "#contact", "label": "Contact"},
     ],
@@ -38,12 +169,15 @@ SITE_DATA = {
                 "external": True,
             },
             {
-                "href": "https://www.linkedin.com/in/louiehegelermeile/detail/contact-info/",
                 "label": "Contact Info",
                 "ghost": True,
-                "external": True,
+                "popup": True,
             },
         ],
+        "contact_popup": {
+            "email": "contact@louietien.com",
+            "phone": "+4521302242",
+        },
         "location": "Copenhagen, Capital Region of Denmark, Denmark",
         "stats": [
             "Danish + English",
@@ -152,6 +286,30 @@ SITE_DATA = {
                 "description": (
                     "Handled stock logistics, customer service, and in-store sales support."
                 ),
+            },
+        ],
+    },
+    "projects_section": {
+        "title": "Projects",
+        "description": "Internal tools, automations, and web apps I've built on the side.",
+        "cta_label": "View all projects",
+        "cta_href": "/projects",
+        "projects": [
+            {
+                "title": "Knowledge Base (215kbase / itkbase)",
+                "description": "Markdown-first internal knowledge base with a web editor, section/category browsing, and image upload. Deployed in two variants.",
+            },
+            {
+                "title": "ferie-monday",
+                "description": "Holiday overview pulling vacation data from Monday.com with Azure AD SSO, daily refresh, and admin CRUD.",
+            },
+            {
+                "title": "status-page",
+                "description": "Lightweight IT ops status page with live SSE updates, incident lifecycle management, and audit log.",
+            },
+            {
+                "title": "ms-admin-tools",
+                "description": "Browser-based admin console for Microsoft 365 — mailbox delegation, user on/offboarding, and account lifecycle.",
             },
         ],
     },

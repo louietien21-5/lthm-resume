@@ -31,7 +31,7 @@ from webauthn.helpers.structs import (
 )
 from werkzeug.middleware.proxy_fix import ProxyFix
 
-from content import SITE_DATA
+from content import PROJECTS_DATA, SITE_DATA
 from passkey_store import (
     PasskeyStore,
     PasskeyStoreError,
@@ -524,6 +524,10 @@ def create_app() -> Flask:
     @app.get("/")
     def home():
         return render_template("index.html", site=SITE_DATA)
+
+    @app.get("/projects")
+    def projects():
+        return render_template("projects.html", data=PROJECTS_DATA)
 
     @app.get("/favicon.ico")
     def favicon_ico():

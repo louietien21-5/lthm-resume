@@ -12,9 +12,7 @@
   <script>
     (function () {
       var saved = localStorage.getItem("theme");
-      if (saved === "dark" || saved === "light") {
-        document.documentElement.setAttribute("data-theme", saved);
-      }
+      document.documentElement.setAttribute("data-theme", (saved === "dark" || saved === "light") ? saved : "light");
     })();
   </script>
 </head>
@@ -26,7 +24,7 @@
   <main class="wrap">
     <nav class="quick-nav" aria-label="Section navigation">
       {% for link in site.quick_nav %}
-      <a href="{{ link.href }}">{{ link.label }}</a>
+      <a href="{{ link.href }}"{% if link.page %} class="nav-page-link"{% endif %}>{{ link.label }}</a>
       {% endfor %}
     </nav>
 
@@ -39,7 +37,11 @@
           <p class="subtitle">{{ site.hero.subtitle }}</p>
           <div class="hero-actions">
             {% for action in site.hero.actions %}
+            {% if action.popup %}
+            <button class="btn{% if action.ghost %} btn-ghost{% endif %}" type="button" id="contact-popup-trigger">{{ action.label }}</button>
+            {% else %}
             <a class="btn{% if action.ghost %} btn-ghost{% endif %}" href="{{ action.href }}"{% if action.external %} target="_blank" rel="noreferrer"{% endif %}>{{ action.label }}</a>
+            {% endif %}
             {% endfor %}
           </div>
           <p class="meta top-gap">{{ site.hero.location }}</p>
@@ -89,6 +91,22 @@
       </div>
     </section>
 
+    <section class="section" id="projects">
+      <h2 class="section-label">{{ site.projects_section.title }}</h2>
+      <p class="section-intro">{{ site.projects_section.description }}</p>
+      <div class="projects">
+        {% for item in site.projects_section.projects %}
+        <div class="project">
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="section-cta">
+        <a class="btn btn-ghost" href="{{ site.projects_section.cta_href }}">{{ site.projects_section.cta_label }} &rarr;</a>
+      </div>
+    </section>
+
     <section class="section" id="skills">
       <h2 class="section-label">{{ site.skills.title }}</h2>
       <ul class="tags">
@@ -134,6 +152,24 @@
       </div>
     </section>
   </main>
+
+  <div class="modal-overlay" id="contact-modal" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <p class="modal-title" id="contact-modal-title">Contact</p>
+        <button class="modal-close" id="contact-modal-close" type="button" aria-label="Close">Close</button>
+      </div>
+      <div class="modal-row">
+        <span class="modal-row-label">Email</span>
+        <a class="modal-row-value" href="mailto:{{ site.hero.contact_popup.email }}">{{ site.hero.contact_popup.email }}</a>
+      </div>
+      <div class="modal-row">
+        <span class="modal-row-label">Phone</span>
+        <a class="modal-row-value" href="tel:{{ site.hero.contact_popup.phone }}">{{ site.hero.contact_popup.phone }}</a>
+      </div>
+    </div>
+  </div>
+
   <script>
     (function () {
       var root = document.documentElement;
@@ -245,6 +281,32 @@
       }
 
       tick();
+    })();
+
+    (function () {
+      var modal = document.getElementById("contact-modal");
+      var trigger = document.getElementById("contact-popup-trigger");
+      var closeBtn = document.getElementById("contact-modal-close");
+      if (!modal || !trigger) return;
+
+      function openModal() {
+        modal.classList.add("is-open");
+        closeBtn.focus();
+      }
+
+      function closeModal() {
+        modal.classList.remove("is-open");
+        trigger.focus();
+      }
+
+      trigger.addEventListener("click", openModal);
+      closeBtn.addEventListener("click", closeModal);
+      modal.addEventListener("click", function (e) {
+        if (e.target === modal) closeModal();
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+      });
     })();
   </script>
 </body>
