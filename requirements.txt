@@ -1,0 +1,5 @@
+flask>=3.0,<4.0
+webauthn>=2.7,<3.0
+waitress>=3.0,<4.0
+pandas>=2.2,<3.0
+plotly>=5.24,<6.0

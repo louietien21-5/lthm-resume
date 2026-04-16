@@ -1,0 +1,545 @@
+Total lines: 637
+
+===== About (2 matches) =====
+--- window around line 51 ---
+00045: 0 post impressions
+00046: Start a post to increase engagement.
+00047: Past 7 days
+00048: 12 search appearances
+00049: See how often you appear in search results.
+00050: Show all
+00051: About
+00052: IT Operations Specialist at 21-5. Setup & Maintenance of various devices. Azure Administration, MS 365, etc.
+00053: Previously worked as a Senior Technical Advisor for Webhelp, handling 2nd line support for world's biggest IT giant, supporting iOS, macOS devices and more.
+00054: Activity
+00055: 723 followers
+00056: Create a post
+00057: Louie Hegeler-Meile
+00058: reposted this
+00059: Mona Wessing Premium Profile 1st
+00060: Mona Wessing
+00061: • 1st
+00062: IT Operations Manager hos 21-5
+00063: 3w •
+00064: Kære netværk
+00065: Vi søger en glad og udadvendt IT Supporter til vores hyggelige hus i Hørsholm.
+00066: Du kan læse mere om stillingen her:
+00067: https://lnkd.in/eZbPwrhj
+00068: Og mere om os her:
+00069: https://www.21-5.dk/
+00070: Del meget gerne 😊
+00071: …
+00072: more
+00073: Show translation
+00074: 21 familier deler 5 unikke ferieboliger
+00075: 21 familier deler 5 unikke ferieboliger
+00076: 21-5.dk
+00077: Laila Albæk Salem Køj and 25 others reacted
+00078: Laila Albæk Salem Køj and 25 others
+00079: 2 comments
+00080: 2 comments
+00081: •
+00082: 4 reposts
+00083: 4 reposts
+00084: Like
+00085: Comment
+00086: Repost
+00087: Send
+00088: Louie Hegeler-Meile
+00089: reposted this
+00090: Mona Wessing Premium Profile 1st
+00091: Mona Wessing
+00092: • 1st
+00093: IT Operations Manager hos 21-5
+00094: 3mo •
+00095: Hey netværk - vi står og mangler en dygtig kollega til vores IT Team
+00096: Vi leder efter en Digital Delivery Lead med solid projektledelseserfaring og en stærk teknisk forståelse, som gør dig i stand til at tale samme sprog som udviklere, IT-specialister og eksterne partnere. Du bliver en del af vores udviklingsteam, der i dag består af tre udviklere og en Business Partner.
+00097: Læs mere her og skynd dig at søge eller dele!!
+00098: …
+00099: more
+00100: Show translation
+00101: Vi søger en erfaren og engageret Digital Delivery Lead med IT-teknisk forståelse
+00102: Vi søger en erfaren og engageret Digital Delivery Lead med IT-teknisk forståelse
+00103: jobindex.dk
+00104: Kamilla Falkenberg Høeg and 22 others reacted
+00105: Kamilla Falkenberg Høeg and 22 others
+
+--- window around line 580 ---
+00574: Your feedback will help us improve your experience
+00575: It’s annoying or not interesting
+00576: I’ve seen the same ad too often
+00577: If you think this goes against our Professional Community Policies, please let us know.
+00578: Report this ad
+00579: Submit
+00580: About
+00581: Accessibility
+00582: Talent Solutions
+00583: Community Guidelines
+00584: Careers
+00585: Marketing Solutions
+00586: Privacy & Terms
+00587: Ad Choices
+00588: Advertising
+00589: Sales Solutions
+00590: Mobile
+00591: Small Business
+00592: Safety Center
+00593: LinkedIn Corporation © 2026
+00594: Questions?
+00595: Visit our Help Center.
+00596: Manage your account and privacy
+00597: Go to your Settings.
+00598: Recommendation transparency
+00599: Learn more about Recommended Content.
+00600: Select language
+00601: العربية (Arabic)
+00602: বাংলা (Bangla)
+00603: Čeština (Czech)
+00604: Dansk (Danish)
+00605: Deutsch (German)
+00606: Ελληνικά (Greek)
+00607: English (English)
+00608: Español (Spanish)
+00609: فارسی (Persian)
+00610: Suomi (Finnish)
+00611: Français (French)
+00612: हिंदी (Hindi)
+00613: Magyar (Hungarian)
+00614: Bahasa Indonesia (Indonesian)
+00615: Italiano (Italian)
+00616: עברית (Hebrew)
+00617: 日本語 (Japanese)
+00618: 한국어 (Korean)
+00619: मराठी (Marathi)
+00620: Bahasa Malaysia (Malay)
+00621: Nederlands (Dutch)
+00622: Norsk (Norwegian)
+00623: ਪੰਜਾਬੀ (Punjabi)
+00624: Polski (Polish)
+00625: Português (Portuguese)
+00626: Română (Romanian)
+00627: Русский (Russian)
+00628: Svenska (Swedish)
+00629: తెలుగు (Telugu)
+00630: ภาษาไทย (Thai)
+00631: Tagalog (Tagalog)
+00632: Türkçe (Turkish)
+00633: Українська (Ukrainian)
+00634: Tiếng Việt (Vietnamese)
+
+===== Experience (1 matches) =====
+--- window around line 440 ---
+00434: 1/9
+00435: Like
+00436: Comment
+00437: Repost
+00438: Send
+00439: Show all
+00440: Experience
+00441: 21-5
+00442: Full-time · 4 yrs 6 mos
+00443: Hørsholm, Capital Region, Denmark
+00444: Senior IT Operations Specialist
+00445: Apr 2025 - Present · 11 mos
+00446: Node.js
+00447: IT Operations Specialist
+00448: Sep 2021 - Apr 2025 · 3 yrs 8 mos
+00449: Microsoft Exchange, Azure DevOps and +11 skills
+00450: Vinstue 90
+00451: Part-time · 10 yrs 7 mos
+00452: HR Business Partner
+00453: Aug 2018 - Present · 7 yrs 7 mos
+00454: Copenhagen Area, Capital Region, Denmark
+00455: Human Resources (HR)
+00456: Bartender
+00457: Aug 2018 - Jan 2020 · 1 yr 6 mos
+00458: Dish Washer and Cleaner
+00459: Aug 2015 - Aug 2018 · 3 yrs 1 mo
+00460: Webhelp
+00461: Full-time · 1 yr 8 mos
+00462: Senior Technical Advisor
+00463: Aug 2020 - Aug 2021 · 1 yr 1 mo
+00464: Copenhagen, Capital Region, Denmark
+00465: Information Technology and Technical Support
+00466: Technical Advisor
+00467: Jan 2020 - Jul 2020 · 7 mos
+00468: Copenhagen Area, Capital Region, Denmark
+00469: Information Technology and Technical Support
+00470: Student Assistant
+00471: HARTUNG Men's Wear · Part-time
+00472: Sep 2014 - Aug 2018 · 4 yrs
+00473: Copenhagen Area, Capital Region, Denmark
+00474: Clothing and shoes of Italian bespoke quality. High-end brands like Brunello Cucinelli, Mandelli, KITON, Luigi Borrelli, Caruso, CANALI and more.
+00475: Education
+00476: Rysensteen Gymnasium
+00477: Upper Secondary School, Music and English
+00478: 2017 – 2019
+00479: Skolen ved Søerne
+00480: Folkeskole
+00481: 2007 – 2017
+00482: Skills
+00483: Node.js
+00484: Senior IT Operations Specialist at 21-5
+00485: Microsoft Exchange
+00486: IT Operations Specialist at 21-5
+00487: 1 endorsement
+00488: Show all
+00489: Interests
+00490: Companies
+00491: Newsletters
+00492: Schools
+00493: 21-5
+00494: 7,128 followers
+
+===== Education (1 matches) =====
+--- window around line 475 ---
+00469: Information Technology and Technical Support
+00470: Student Assistant
+00471: HARTUNG Men's Wear · Part-time
+00472: Sep 2014 - Aug 2018 · 4 yrs
+00473: Copenhagen Area, Capital Region, Denmark
+00474: Clothing and shoes of Italian bespoke quality. High-end brands like Brunello Cucinelli, Mandelli, KITON, Luigi Borrelli, Caruso, CANALI and more.
+00475: Education
+00476: Rysensteen Gymnasium
+00477: Upper Secondary School, Music and English
+00478: 2017 – 2019
+00479: Skolen ved Søerne
+00480: Folkeskole
+00481: 2007 – 2017
+00482: Skills
+00483: Node.js
+00484: Senior IT Operations Specialist at 21-5
+00485: Microsoft Exchange
+00486: IT Operations Specialist at 21-5
+00487: 1 endorsement
+00488: Show all
+00489: Interests
+00490: Companies
+00491: Newsletters
+00492: Schools
+00493: 21-5
+00494: 7,128 followers
+00495: Following
+00496: NORDIfy
+00497: 148 followers
+00498: Following
+00499: Show all
+00500: Profile language
+00501: English
+00502: Dansk
+00503: Public profile & URL
+00504: www.linkedin.com/in/louiehegelermeile
+00505: Ad Options
+00506: Why am I seeing this ad?
+00507: Manage your ad preferences
+00508: Hide or report this ad
+00509: I don’t want to see this ad in my feed
+00510: Don’t want to see this
+00511: Tell us why you don’t want to see this
+00512: Your feedback will help us improve your experience
+00513: It’s annoying or not interesting
+00514: I’ve seen the same ad too often
+00515: If you think this goes against our Professional Community Policies, please let us know.
+00516: Report this ad
+00517: Submit
+00518: Who your viewers also viewed
+00519: Private to you
+00520: Someone at 21-5
+00521: View
+00522: Someone at Niels Brock
+00523: View
+00524: Business Strategist in the Real Estate industry from Copenhagen Metropolitan Area
+00525: View
+00526: Someone at 21-5
+00527: View
+00528: Someone at 21-5
+00529: View
+
+===== Skills (1 matches) =====
+--- window around line 482 ---
+00476: Rysensteen Gymnasium
+00477: Upper Secondary School, Music and English
+00478: 2017 – 2019
+00479: Skolen ved Søerne
+00480: Folkeskole
+00481: 2007 – 2017
+00482: Skills
+00483: Node.js
+00484: Senior IT Operations Specialist at 21-5
+00485: Microsoft Exchange
+00486: IT Operations Specialist at 21-5
+00487: 1 endorsement
+00488: Show all
+00489: Interests
+00490: Companies
+00491: Newsletters
+00492: Schools
+00493: 21-5
+00494: 7,128 followers
+00495: Following
+00496: NORDIfy
+00497: 148 followers
+00498: Following
+00499: Show all
+00500: Profile language
+00501: English
+00502: Dansk
+00503: Public profile & URL
+00504: www.linkedin.com/in/louiehegelermeile
+00505: Ad Options
+00506: Why am I seeing this ad?
+00507: Manage your ad preferences
+00508: Hide or report this ad
+00509: I don’t want to see this ad in my feed
+00510: Don’t want to see this
+00511: Tell us why you don’t want to see this
+00512: Your feedback will help us improve your experience
+00513: It’s annoying or not interesting
+00514: I’ve seen the same ad too often
+00515: If you think this goes against our Professional Community Policies, please let us know.
+00516: Report this ad
+00517: Submit
+00518: Who your viewers also viewed
+00519: Private to you
+00520: Someone at 21-5
+00521: View
+00522: Someone at Niels Brock
+00523: View
+00524: Business Strategist in the Real Estate industry from Copenhagen Metropolitan Area
+00525: View
+00526: Someone at 21-5
+00527: View
+00528: Someone at 21-5
+00529: View
+00530: People you may know
+00531: From your company
+00532: Pia Lund
+00533: · 2nd
+00534: Sales koordinator / Administrativ koordinator / Kundeservice/ Customer Care / Reklamations ansvarlig
+00535: Connect
+00536: Laurence Pastré
+
+===== Licenses & certifications (0 matches) =====
+===== Projects (0 matches) =====
+
+===== First 220 lines =====
+00001: Louie Hegeler-Meile | LinkedIn
+00002: Feed | LinkedIn
+00003: Feed | LinkedIn
+00004: 0 notifications
+00005: Skip to main content
+00006: Home
+00007: My Network
+00008: Jobs
+00009: Messaging
+00010: 2
+00011: Notifications
+00012: Me
+00013: For Business
+00014: Premium for your Page: 1 month free
+00015: Louie Hegeler-Meile
+00016: Senior IT Operations Specialist at 21-5
+00017: Enhance profile
+00018: Add section
+00019: Open to
+00020: Louie Hegeler-Meile
+00021: Senior IT Operations Specialist at 21-5
+00022: 21-5
+00023: Copenhagen, Capital Region of Denmark, Denmark
+00024: ·
+00025: Contact info
+00026: 21-5
+00027: 500+ connections
+00028: Open to
+00029: Add section
+00030: Enhance profile
+00031: Tell non-profits
+00032: you are interested in getting involved with your time and skills
+00033: Get started
+00034: Analytics
+00035: Private to you
+00036: 13 profile views
+00037: Discover who’s viewed your profile.
+00038: 0 post impressions
+00039: Start a post to increase engagement.
+00040: Past 7 days
+00041: 12 search appearances
+00042: See how often you appear in search results.
+00043: 13 profile views
+00044: Discover who’s viewed your profile.
+00045: 0 post impressions
+00046: Start a post to increase engagement.
+00047: Past 7 days
+00048: 12 search appearances
+00049: See how often you appear in search results.
+00050: Show all
+00051: About
+00052: IT Operations Specialist at 21-5. Setup & Maintenance of various devices. Azure Administration, MS 365, etc.
+00053: Previously worked as a Senior Technical Advisor for Webhelp, handling 2nd line support for world's biggest IT giant, supporting iOS, macOS devices and more.
+00054: Activity
+00055: 723 followers
+00056: Create a post
+00057: Louie Hegeler-Meile
+00058: reposted this
+00059: Mona Wessing Premium Profile 1st
+00060: Mona Wessing
+00061: • 1st
+00062: IT Operations Manager hos 21-5
+00063: 3w •
+00064: Kære netværk
+00065: Vi søger en glad og udadvendt IT Supporter til vores hyggelige hus i Hørsholm.
+00066: Du kan læse mere om stillingen her:
+00067: https://lnkd.in/eZbPwrhj
+00068: Og mere om os her:
+00069: https://www.21-5.dk/
+00070: Del meget gerne 😊
+00071: …
+00072: more
+00073: Show translation
+00074: 21 familier deler 5 unikke ferieboliger
+00075: 21 familier deler 5 unikke ferieboliger
+00076: 21-5.dk
+00077: Laila Albæk Salem Køj and 25 others reacted
+00078: Laila Albæk Salem Køj and 25 others
+00079: 2 comments
+00080: 2 comments
+00081: •
+00082: 4 reposts
+00083: 4 reposts
+00084: Like
+00085: Comment
+00086: Repost
+00087: Send
+00088: Louie Hegeler-Meile
+00089: reposted this
+00090: Mona Wessing Premium Profile 1st
+00091: Mona Wessing
+00092: • 1st
+00093: IT Operations Manager hos 21-5
+00094: 3mo •
+00095: Hey netværk - vi står og mangler en dygtig kollega til vores IT Team
+00096: Vi leder efter en Digital Delivery Lead med solid projektledelseserfaring og en stærk teknisk forståelse, som gør dig i stand til at tale samme sprog som udviklere, IT-specialister og eksterne partnere. Du bliver en del af vores udviklingsteam, der i dag består af tre udviklere og en Business Partner.
+00097: Læs mere her og skynd dig at søge eller dele!!
+00098: …
+00099: more
+00100: Show translation
+00101: Vi søger en erfaren og engageret Digital Delivery Lead med IT-teknisk forståelse
+00102: Vi søger en erfaren og engageret Digital Delivery Lead med IT-teknisk forståelse
+00103: jobindex.dk
+00104: Kamilla Falkenberg Høeg and 22 others reacted
+00105: Kamilla Falkenberg Høeg and 22 others
+00106: 4 reposts
+00107: 4 reposts
+00108: Celebrate
+00109: Comment
+00110: Repost
+00111: Send
+00112: Louie Hegeler-Meile
+00113: reposted this
+00114: Christina Norling Lygaard Verified Profile 2nd
+00115: Christina Norling Lygaard
+00116: • 2nd
+00117: Design & Packaging Lead, Design Development at Coop Trading
+00118: 3mo •
+00119: Kære netværk.
+00120: Emilius på 21 år har naturligvis endnu ikke opbygget en tung LinkedIn-profil. Derfor rækker jeg ud til mit netværk i håbet om, at I måske kan hjælpe ham videre mod hans næste jobmulighed.  Del også meget gerne hans opslag.
+00121: ****************
+00122: 21-årig med 5 års erfaring fra McDonald’s, 6 måneder som Operations Support hos 21-5 samt 4 måneder, som værnepligtig, i Flyvevåbenet.
+00123: Mine erfaringer og kvalifikationer:
+00124: 21-5 Ferieboliger (maj 2025 - december 2025 (tidsbegrænset stilling):
+00125: I min rolle i Property Operations & Support hos 21-5 har jeg haft ansvar for at sikre, at både ejere og interne teams får den bedst mulige hjælp i den daglige drift af 21-5’s ejerskabsforeninger. Jeg fungerer som bindeled mellem administration, driftsafdeling og ejere og sørger for, at spørgsmål, udfordringer og opgaver bliver håndteret hurtigt, professionelt og i tråd med 21-5’s værdier om fællesskab, kvalitet og tillid. I perioden har jeg haft ansvar for boligporteføljer i Rom, Tisvilde og på Mallorca.
+00126: Reference: Head of Support & Property Operations, Line B. Hede – skriv eller ring til mig for få Lines kontaktinformationer.
+00127: McDonald's, Hørsholm (august 2019 – august 2024):
+00128: Jeg har I 5 år haft fornøjelsen af at arbejde hos McDonald's, både som del- og fuldtid. For mig har McDonald's ikke kun været et job, men en fantastisk mulighed for at blive en del af et stærkt fællesskab, hvor personlig udvikling er i fokus.
+00129: Jeg har opnået stærke færdigheder i kundeservice, teamwork og effektivitet under pres, og arbejdede i alle områder i restauranten, herunder McCafé og betjening af kunder i drive-thru med præcision og positiv attitude.
+00130: Erfaringen har lært mig vigtigheden af teamwork, ansvar, fleksibilitet og omstillingsparathed for at sikre effektivt samarbejde og succes.
+00131: Flyvevåbnets Basisuddannelse (august 2024 – december 2024):
+00132: Min tid som værnepligtig i Operations Support Wing styrkede min selvdisciplin, ansvarsfølelse og evne til at arbejde under pres. Jeg lærte her også vigtigheden af teamwork og udviklede en stærk fysisk og mental udholdenhed.​
+00133: Rygsækrejse i Asien (2 måneder):
+00134: Min tur gennem Bali, Vietnam og Sri Lanka har udvidet min kulturelle forståelse og fleksibilitet, hvilket er værdifuldt i en rolle med kontakt til forskellige mennesker.​
+00135: Jeg er nu klar til at udvikle mine færdigheder endnu mere i mit næste job, inden jeg om et par år søger ind som Jægerpilot. Jeg er motiveret, ansvarsbevidst og trives både selvstændigt og i et team.
+00136: Jeg er interesseret i jobmuligheder inden for bl.a. operations support, kunde support, backoffice, runner-/serviceopgaver samt andre administrative funktioner.
+00137: Jeg vedlægger mit CV i kommentarsporet, og håber på at netværket her kan hjælpe. Del også meget gerne mit oplag.
+00138: På forhånd tusind tak for hjælpen.
+00139: Mange hilsener Emilius Norling
+00140: Mail:
+00141: emiliusnorling@hotmail.com
+00142: Mobil: 53 49 20 99
+00143: …
+00144: more
+00145: Show translation
+00146: Eva Emilie Bernth and 64 others reacted
+00147: Eva Emilie Bernth and 64 others
+00148: 8 comments
+00149: 8 comments
+00150: •
+00151: 14 reposts
+00152: 14 reposts
+00153: Like
+00154: Comment
+00155: Repost
+00156: Send
+00157: Louie Hegeler-Meile
+00158: reposted this
+00159: Mona Wessing Premium Profile 1st
+00160: Mona Wessing
+00161: • 1st
+00162: IT Operations Manager hos 21-5
+00163: 9mo • Edited •
+00164: Er du eller kender du en energisk Dynamics 365 CRM-udvikler med god energi og et godt overblik?
+00165: Du behøver ikke være tung specialist – vigtigst er, at du har lyst til at tage fat på både små og store CRM-opgaver, og samtidig være med til at gentænke og modernisere vores nuværende setup. Hvis du også har flair for DevOps og Azure, er det et kæmpe plus! Vi holder til i et helt særligt hus i Hørsholm 🏠
+00166: Se mere om jobbet her:
+00167: https://lnkd.in/dcBQGudQ
+00168: Lær os at kende her:
+00169: https://www.21-5.dk/
+00170: …
+00171: more
+00172: Show translation
+00173: 31 reactions
+00174: 31
+00175: 11 reposts
+00176: 11 reposts
+00177: Like
+00178: Comment
+00179: Repost
+00180: Send
+00181: Louie Hegeler-Meile
+00182: reposted this
+00183: Mona Wessing Premium Profile 1st
+00184: Mona Wessing
+00185: • 1st
+00186: IT Operations Manager hos 21-5
+00187: 1yr •
+00188: Har du lyst til at være en del af mit fantastiske team? Så får du verdens sødeste kolleger og et helt særligt hus i Hørsholm at supportere
+00189: Show translation
+00190: IT-supporter
+00191: IT-supporter
+00192: jobindex.dk
+00193: 14 reactions
+00194: 14
+00195: 4 reposts
+00196: 4 reposts
+00197: Like
+00198: Comment
+00199: Repost
+00200: Send
+00201: Louie Hegeler-Meile
+00202: reposted this
+00203: David Romeijn Verified Profile 1st
+00204: David Romeijn
+00205: • 1st
+00206: Laboratory Technician specializing in Analytical Chemistry
+00207: 1yr • Edited •
+00208: 🔬🌟 Seeking an Internship Opportunity as a Laboratory Technician!🔬🌟
+00209: Dear LinkedIn Community,
+00210: I am thrilled to announce that I am actively seeking an internship opportunity as a Laboratory Technician, in Copenhagen area, to further cultivate my passion for scientific exploration.
+00211: With a solid foundation in laboratory techniques, I am eager to apply my skills and knowledge in a dynamic laboratory environment.
+00212: Here's a glimpse of what I bring to the table:
+00213: 🔬 Proficiency in conducting various laboratory tests and experiments, ensuring accuracy and precision in results.
+00214: 🔬 Strong understanding of laboratory protocols, safety procedures, and adherence to regulatory standards.
+00215: 🔬 Skilled in utilizing a wide range of laboratory equipment and instrumentation to analyze samples and generate meaningful data. (Ex. HPLC, GC, AAS, ICP and AES).
+00216: 🔬 Ability to collaborate effectively with cross-functional teams.
+00217: 🔬 Excellent attention to detail, analytical mindset, and problem-solving capabilities essential for troubleshooting and optimizing laboratory processes.
+00218: I am eager to leverage this internship opportunity to gain hands-on experience, refine my skills, and make meaningful contributions to research endeavours. My goal is not only to learn and grow but also to contribute positively to the advancement of scientific knowledge and discovery.
+00219: If you know of any internship openings or would like to connect to discuss potential opportunities, I would be grateful for your support and insight.
+00220: Thank you for your time and consideration. I look forward to connecting with fellow professionals and organisations passionate in what you do.

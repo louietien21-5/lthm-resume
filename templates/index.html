@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ site.page_title }}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      document.documentElement.setAttribute("data-theme", (saved === "dark" || saved === "light") ? saved : "light");
+    })();
+  </script>
+</head>
+<body>
+  <div class="top-right-controls">
+    <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Toggle dark mode">{{ site.theme.dark_label }}</button>
+  </div>
+
+  <main class="wrap">
+    <nav class="quick-nav" aria-label="Section navigation">
+      {% for link in site.quick_nav %}
+      <a href="{{ link.href }}"{% if link.page %} class="nav-page-link"{% endif %}>{{ link.label }}</a>
+      {% endfor %}
+    </nav>
+
+    <header class="hero">
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow">{{ site.hero.eyebrow }}</p>
+          <p class="nameplate">{{ site.hero.nameplate }}</p>
+          <h1>{{ site.hero.intro }} <span id="role-article">an</span> <span id="role-text" class="role-text">{{ site.hero.roles[0] }}</span><span class="cursor" aria-hidden="true"></span></h1>
+          <p class="subtitle">{{ site.hero.subtitle }}</p>
+          <div class="hero-actions">
+            {% for action in site.hero.actions %}
+            {% if action.popup %}
+            <button class="btn{% if action.ghost %} btn-ghost{% endif %}" type="button" id="contact-popup-trigger">{{ action.label }}</button>
+            {% else %}
+            <a class="btn{% if action.ghost %} btn-ghost{% endif %}" href="{{ action.href }}"{% if action.external %} target="_blank" rel="noreferrer"{% endif %}>{{ action.label }}</a>
+            {% endif %}
+            {% endfor %}
+          </div>
+          <p class="meta top-gap">{{ site.hero.location }}</p>
+          <div class="quick-stats">
+            {% for stat in site.hero.stats %}
+            <span class="pill">{{ stat }}</span>
+            {% endfor %}
+          </div>
+          <div class="wins">
+            {% for win in site.hero.wins %}
+            <div class="win"><strong>{{ win.value }}</strong><span>{{ win.label }}</span></div>
+            {% endfor %}
+          </div>
+        </div>
+        <figure class="profile-shell">
+          <img class="profile-photo" src="{{ url_for('static', filename='profile.jpg') }}" alt="Louie Hegeler-Meile profile photo">
+        </figure>
+      </div>
+    </header>
+
+    <section class="section" id="about">
+      <h2 class="section-label">{{ site.about.title }}</h2>
+      <div class="about-body">
+        <div class="about-col">
+          {% for paragraph in site.about.paragraphs[:2] %}
+          <p>{{ paragraph }}</p>
+          {% endfor %}
+        </div>
+        <div class="about-col">
+          {% for paragraph in site.about.paragraphs[2:] %}
+          <p>{{ paragraph }}</p>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="experience">
+      <h2 class="section-label">{{ site.experience.title }}</h2>
+      <div class="exp-list">
+        {% for item in site.experience["items"] %}
+        <div class="item timeline-item">
+          <div class="exp-row">
+            {% if item.logo.type == "image" %}
+            <img class="exp-logo" src="{{ url_for('static', filename=item.logo.src) }}" alt="{{ item.logo.alt }}">
+            {% else %}
+            <span class="exp-logo exp-logo-badge" aria-hidden="true">{{ item.logo.text }}</span>
+            {% endif %}
+            <h3>{{ item.title }}</h3>
+          </div>
+          <p class="meta">{{ item.meta }}</p>
+          <p>{{ item.description }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="section" id="projects">
+      <h2 class="section-label">{{ site.projects_section.title }}</h2>
+      <p class="section-intro">{{ site.projects_section.description }}</p>
+      <div class="projects">
+        {% for item in site.projects_section.projects %}
+        <div class="project">
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="section-cta">
+        <a class="btn btn-ghost" href="{{ site.projects_section.cta_href }}">{{ site.projects_section.cta_label }} &rarr;</a>
+      </div>
+    </section>
+
+    <section class="section" id="skills">
+      <h2 class="section-label">{{ site.skills.title }}</h2>
+      <ul class="tags">
+        {% for skill in site.skills["items"] %}
+        <li>{{ skill }}</li>
+        {% endfor %}
+      </ul>
+      <h2 class="section-label top-gap">{{ site.skills.education_title }}</h2>
+      <div class="edu-list">
+        {% for school in site.skills.education %}
+        <div class="item">
+          <h3>{{ school.school }}</h3>
+          {% if school.meta %}
+          <p class="meta">{{ school.meta }}</p>
+          {% endif %}
+          {% if school.description %}
+          <p>{{ school.description }}</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="section" id="snapshot">
+      <h2 class="section-label">{{ site.snapshot.title }}</h2>
+      <div class="projects">
+        {% for item in site.snapshot["items"] %}
+        <div class="project">
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.description }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section class="section cta" id="contact">
+      <h2 class="section-label">{{ site.contact.title }}</h2>
+      <p class="cta-desc">{{ site.contact.description }}</p>
+      <div class="hero-actions">
+        {% for action in site.contact.actions %}
+        <a class="btn{% if action.ghost %} btn-ghost{% endif %}" href="{{ action.href }}"{% if action.external %} target="_blank" rel="noreferrer"{% endif %}>{{ action.label }}</a>
+        {% endfor %}
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-overlay" id="contact-modal" role="dialog" aria-modal="true" aria-labelledby="contact-modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <p class="modal-title" id="contact-modal-title">Contact</p>
+        <button class="modal-close" id="contact-modal-close" type="button" aria-label="Close">Close</button>
+      </div>
+      <div class="modal-row">
+        <span class="modal-row-label">Email</span>
+        <a class="modal-row-value" href="mailto:{{ site.hero.contact_popup.email }}">{{ site.hero.contact_popup.email }}</a>
+      </div>
+      <div class="modal-row">
+        <span class="modal-row-label">Phone</span>
+        <a class="modal-row-value" href="tel:{{ site.hero.contact_popup.phone }}">{{ site.hero.contact_popup.phone }}</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var root = document.documentElement;
+      var btn = document.getElementById("theme-toggle");
+
+      function currentTheme() {
+        var explicit = root.getAttribute("data-theme");
+        if (explicit) return explicit;
+        return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+
+      function renderLabel() {
+        var isDark = currentTheme() === "dark";
+        btn.textContent = isDark ? {{ site.theme.light_label | tojson }} : {{ site.theme.dark_label | tojson }};
+      }
+
+      btn.addEventListener("click", function () {
+        var next = currentTheme() === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        localStorage.setItem("theme", next);
+        renderLabel();
+      });
+
+      renderLabel();
+    })();
+
+    (function () {
+      var nav = document.querySelector(".quick-nav");
+      if (!nav) return;
+      var links = Array.from(nav.querySelectorAll("a[href^='#']"));
+      var sections = links
+        .map(function (link) { return document.querySelector(link.getAttribute("href")); })
+        .filter(Boolean);
+
+      function setActive(id) {
+        links.forEach(function (link) {
+          var target = link.getAttribute("href").slice(1);
+          link.classList.toggle("is-active", target === id);
+        });
+      }
+
+      if ("IntersectionObserver" in window && sections.length) {
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              setActive(entry.target.id);
+            }
+          });
+        }, { rootMargin: "-35% 0px -55% 0px", threshold: 0.01 });
+
+        sections.forEach(function (section) { observer.observe(section); });
+      }
+
+      links.forEach(function (link) {
+        link.addEventListener("click", function () {
+          setActive(link.getAttribute("href").slice(1));
+        });
+      });
+    })();
+
+    (function () {
+      var roleEl = document.getElementById("role-text");
+      var articleEl = document.getElementById("role-article");
+      if (!roleEl || !articleEl) return;
+
+      var roles = {{ site.hero.roles | tojson }};
+      if (!Array.isArray(roles) || roles.length === 0) return;
+
+      var roleIndex = 0;
+      var charIndex = 0;
+      var deleting = false;
+      var holdMs = 1100;
+
+      function articleFor(role) {
+        var trimmed = role.trim().toLowerCase();
+        if (/^it\b/.test(trimmed)) return "an";
+        if (/^[aeiou]/.test(trimmed)) return "an";
+        return "a";
+      }
+
+      roleEl.textContent = "";
+      articleEl.textContent = articleFor(roles[0]);
+
+      function tick() {
+        var current = roles[roleIndex];
+        articleEl.textContent = articleFor(current);
+
+        if (!deleting) {
+          charIndex += 1;
+          roleEl.textContent = current.slice(0, charIndex);
+          if (charIndex === current.length) {
+            deleting = true;
+            setTimeout(tick, holdMs);
+            return;
+          }
+          setTimeout(tick, 85);
+          return;
+        }
+
+        charIndex -= 1;
+        roleEl.textContent = current.slice(0, charIndex);
+        if (charIndex === 0) {
+          deleting = false;
+          roleIndex = (roleIndex + 1) % roles.length;
+          setTimeout(tick, 220);
+          return;
+        }
+        setTimeout(tick, 45);
+      }
+
+      tick();
+    })();
+
+    (function () {
+      var modal = document.getElementById("contact-modal");
+      var trigger = document.getElementById("contact-popup-trigger");
+      var closeBtn = document.getElementById("contact-modal-close");
+      if (!modal || !trigger) return;
+
+      function openModal() {
+        modal.classList.add("is-open");
+        closeBtn.focus();
+      }
+
+      function closeModal() {
+        modal.classList.remove("is-open");
+        trigger.focus();
+      }
+
+      trigger.addEventListener("click", openModal);
+      closeBtn.addEventListener("click", closeModal);
+      modal.addEventListener("click", function (e) {
+        if (e.target === modal) closeModal();
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+      });
+    })();
+  </script>
+</body>
+</html>

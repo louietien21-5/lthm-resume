@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Private Login</title>
+  <script>
+    (function () {
+      var saved = localStorage.getItem("theme");
+      if (saved === "dark" || saved === "light") {
+        document.documentElement.setAttribute("data-theme", saved);
+      }
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='stats.css') }}">
+  <script defer src="{{ url_for('static', filename='stats-theme.js') }}"></script>
+  <script id="passkey-config" type="application/json">{{ passkey_client_config | tojson }}</script>
+  <script defer src="{{ url_for('static', filename='passkeys.js') }}"></script>
+</head>
+<body class="stats-body login-body">
+  <main class="login-wrap panel passkey-wrap">
+    <p class="badge">Restricted access</p>
+    <h1>Unlock private tools</h1>
+    <p class="muted">Use a passkey to access the private nav, stats dashboard, and expense splitter.</p>
+
+    <p id="passkey-feedback" class="error-message{% if not error %} hidden-message{% endif %}">{{ error or "" }}</p>
+
+    {% if passkey_state == "setup-secret" %}
+    <form id="setup-secret-form" class="login-form">
+      <label for="setup-secret">Setup secret</label>
+      <input id="setup-secret" name="secret" type="password" autocomplete="one-time-code" required autofocus>
+      <button type="submit" class="lock-button">Unlock passkey setup</button>
+    </form>
+    <p class="muted small">First-time setup only. After the first passkey is registered, sign-in uses passkeys only.</p>
+    {% elif passkey_state == "bootstrap" %}
+    <div class="passkey-panel">
+      <p class="badge">Passkey setup unlocked</p>
+      <h2>Create your first passkey</h2>
+      <p class="muted">1Password can store and use this passkey through the browser prompt.</p>
+      <div class="login-form">
+        <label for="passkey-label">Label</label>
+        <input id="passkey-label" name="label" type="text" placeholder="Primary passkey">
+        <button
+          id="passkey-register-button"
+          type="button"
+          class="lock-button"
+          data-passkey-label-input="passkey-label"
+        >
+          Create passkey
+        </button>
+      </div>
+    </div>
+    {% elif passkey_state == "authenticate" %}
+    <div class="passkey-panel">
+      <p class="badge">Passkey sign-in</p>
+      <h2>Sign in with passkey</h2>
+      <p class="muted">Use the passkey already registered for this site.</p>
+      <button id="passkey-authenticate-button" type="button" class="lock-button">Sign in with passkey</button>
+      {% if passkey_count > 1 %}
+      <p class="muted small">{{ passkey_count }} passkeys are registered for this account.</p>
+      {% endif %}
+    </div>
+    {% else %}
+    <p class="muted">Passkey sign-in is not configured right now.</p>
+    {% if setup_secret_configured and not passkey_runtime_ready %}
+    <p class="muted small">Configure <code>PASSKEY_RP_ID</code> and <code>PASSKEY_ALLOWED_ORIGINS</code> for this environment.</p>
+    {% elif not setup_secret_configured %}
+    <p class="muted small">Set <code>PASSKEY_SETUP_SECRET</code> before creating the first passkey.</p>
+    {% endif %}
+    {% endif %}
+
+    <div class="login-actions">
+      <button
+        id="theme-toggle"
+        type="button"
+        class="ghost-link"
+        data-dark-label="Dark mode"
+        data-light-label="Light mode"
+      >
+        Dark mode
+      </button>
+      <a class="ghost-link" href="{{ url_for('home') }}">Back to Portfolio</a>
+    </div>
+  </main>
+</body>
+</html>
